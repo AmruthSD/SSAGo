@@ -1,0 +1,24 @@
+cmake_minimum_required(VERSION 3.16)
+project(compiler LANGUAGES C CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+find_package(LLVM REQUIRED CONFIG)
+
+include_directories(${LLVM_INCLUDE_DIRS})
+add_definitions(${LLVM_DEFINITIONS})
+include_directories(include)
+
+file(GLOB_RECURSE SOURCES "src/*.cpp")
+
+add_executable(compiler ${SOURCES})
+
+llvm_map_components_to_libnames(LLVM_LIBS
+    core
+    irreader
+    support
+    passes
+)
+
+target_link_libraries(compiler ${LLVM_LIBS})
