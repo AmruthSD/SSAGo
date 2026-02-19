@@ -41,4 +41,6 @@
 *.dwo
 
 
+.vscode/**
 build/**
+input.txt
