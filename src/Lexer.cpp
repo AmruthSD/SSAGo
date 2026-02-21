@@ -15,7 +15,7 @@ Token Lexer::nextToken() {
   skipWhitespace();
 
   if (input.eof())
-    return {"", END_OF_FILE};
+    return {"", TOKEN_TYPE::END_OF_FILE};
 
   if (std::isalpha(currentChar) || currentChar == '_') {
     std::string lexeme;
@@ -28,7 +28,7 @@ Token Lexer::nextToken() {
     auto it = keywords.find(lexeme);
     if (it != keywords.end())
       return {lexeme, it->second};
-    return {lexeme, IDENTIFIER};
+    return {lexeme, TOKEN_TYPE::IDENTIFIER};
   }
 
   if (std::isdigit(currentChar)) {
@@ -39,67 +39,82 @@ Token Lexer::nextToken() {
       advance();
     }
 
-    return {lexeme, INTEGER_LITERAL};
+    return {lexeme, TOKEN_TYPE::INTEGER_LITERAL};
   }
 
   switch (currentChar) {
 
   case '+':
     advance();
-    return {"+", PLUS};
+    return {"+", TOKEN_TYPE::PLUS};
 
   case '-':
     advance();
-    return {"-", MINUS};
+    return {"-", TOKEN_TYPE::MINUS};
 
   case '*':
     advance();
-    return {"*", ASTERISK};
+    return {"*", TOKEN_TYPE::ASTERISK};
 
   case '/':
     advance();
-    return {"/", SLASH};
+    return {"/", TOKEN_TYPE::SLASH};
 
   case '=': {
     advance();
     if (currentChar == '=') {
       advance();
-      return {"==", EQUAL};
+      return {"==", TOKEN_TYPE::EQUAL};
     }
-    return {"=", ASSIGN};
+    return {"=", TOKEN_TYPE::ASSIGN};
   }
 
   case '!': {
     advance();
     if (currentChar == '=') {
       advance();
-      return {"!=", NOT_EQUAL};
+      return {"!=", TOKEN_TYPE::NOT_EQUAL};
     }
-    return {"!", UNKNOWN};
+    return {"!", TOKEN_TYPE::UNKNOWN};
   }
 
   case '<':
     advance();
-    return {"<", LESS};
+    return {"<", TOKEN_TYPE::LESS};
 
   case '>':
     advance();
-    return {">", GREATER};
+    return {">", TOKEN_TYPE::GREATER};
 
   case '(':
     advance();
-    return {"(", LPAREN};
+    return {"(", TOKEN_TYPE::LPAREN};
 
   case ')':
     advance();
-    return {")", RPAREN};
+    return {")", TOKEN_TYPE::RPAREN};
 
   case ';':
     advance();
-    return {";", SEMICOLON};
+    return {";", TOKEN_TYPE::SEMICOLON};
+  }
+
+  if (currentChar == '"') {
+    std::string lexeme;
+    advance();
+
+    while (!input.eof() && currentChar != '"') {
+      lexeme += currentChar;
+      advance();
+    }
+    if (currentChar == '"') {
+      advance();
+      return {lexeme, TOKEN_TYPE::STRING_LITERAL};
+    }
+    return {lexeme, TOKEN_TYPE::UNKNOWN};
   }
 
   char unknownChar = currentChar;
   advance();
-  return {std::string(1, unknownChar), UNKNOWN};
+  return {std::string(1, unknownChar), TOKEN_TYPE::UNKNOWN};
 }

@@ -1,3 +1,4 @@
+#include <AST.hpp>
 #include <Parser.hpp>
 
 Parser::Parser(Lexer &lexer) : lexer(lexer) { advance(); }
@@ -32,5 +33,31 @@ std::unique_ptr<Program> Parser::parseProgram() {
 }
 
 std::unique_ptr<Statement> Parser::parseStatement() {
+
+  if (dataTypeFromToken.find(currentToken.type) != dataTypeFromToken.end()) {
+    return parseDeclarationStatement();
+  }
+
   return parseExpressionStatement();
+}
+
+std::unique_ptr<Statement> Parser::parseDeclarationStatement() {
+
+  TOKEN_TYPE dataType = currentToken.type;
+  advance();
+
+  std::string varName = currentToken.lexeme;
+  expect(TOKEN_TYPE::IDENTIFIER, "Expected variable name");
+
+  std::unique_ptr<Expr> initializer = nullptr;
+
+  if (match(TOKEN_TYPE::ASSIGN)) {
+    initializer = parseExpression();
+  }
+
+  expect(TOKEN_TYPE::SEMICOLON, "Expected ';' after declaration");
+
+  return std::make_unique<DeclarationStmt>(
+      varName, (*(dataTypeFromToken.find(dataType))).second,
+      std::move(initializer));
 }

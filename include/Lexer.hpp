@@ -3,15 +3,17 @@
 #include <string>
 #include <unordered_map>
 
-enum TOKEN_TYPE {
+enum class TOKEN_TYPE {
   // Identifiers & keywords
   IDENTIFIER,
   DATATYPE_INT,
   DATATYPE_FLOAT,
+  DATATYPE_STRING,
 
   // Literals
   INTEGER_LITERAL,
   FLOAT_LITERAL,
+  STRING_LITERAL,
 
   // Operators
   PLUS,     // +
@@ -45,7 +47,9 @@ private:
   char currentChar;
 
   const std::unordered_map<std::string, TOKEN_TYPE> keywords = {
-      {"int", DATATYPE_INT}, {"float", DATATYPE_FLOAT}};
+      {"int", TOKEN_TYPE::DATATYPE_INT},
+      {"float", TOKEN_TYPE::DATATYPE_FLOAT},
+      {"string", TOKEN_TYPE::DATATYPE_STRING}};
 
   void advance();
   void skipWhitespace();

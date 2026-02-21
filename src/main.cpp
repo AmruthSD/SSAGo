@@ -1,5 +1,6 @@
 #include <Lexer.hpp>
 #include <Parser.hpp>
+#include <SemanticAnalyser.hpp>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
@@ -22,6 +23,8 @@ int main(int argc, char **argv) {
 
   Lexer lexer(input);
   Parser parser(lexer);
-  auto x = parser.parse();
+  SemanticAnalyser semanticAnalyser(parser);
+  semanticAnalyser.analyseAST();
+
   return 0;
 }

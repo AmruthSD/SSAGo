@@ -1,16 +1,23 @@
 #pragma once
 
+#include <AST.hpp>
+#include <Lexer.hpp>
+#include <map>
 #include <memory>
 #include <stdexcept>
 #include <vector>
 
-#include <AST.hpp>
-#include <Lexer.hpp>
+enum class DATA_TYPE { DATATYPE_FLOAT, DATATYPE_INT, DATATYPE_STRING };
 
 class Parser {
 private:
   Lexer &lexer;
   Token currentToken;
+
+  const std::map<TOKEN_TYPE, DATA_TYPE> dataTypeFromToken = {
+      {TOKEN_TYPE::DATATYPE_FLOAT, DATA_TYPE::DATATYPE_FLOAT},
+      {TOKEN_TYPE::DATATYPE_INT, DATA_TYPE::DATATYPE_INT},
+      {TOKEN_TYPE::DATATYPE_STRING, DATA_TYPE::DATATYPE_STRING}};
 
   void advance();
   bool match(TOKEN_TYPE type);
@@ -20,6 +27,7 @@ private:
   std::unique_ptr<Statement> parseStatement();
   std::unique_ptr<Statement> parseExpressionStatement();
   std::unique_ptr<Expr> parseExpression(int precedence = 0);
+  std::unique_ptr<Statement> parseDeclarationStatement();
 
 public:
   Parser(Lexer &lexer);
