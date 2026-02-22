@@ -22,10 +22,12 @@ public:
   llvm::Module *getModule();
   llvm::IRBuilder<> &getBuilder();
 
+  void optimizeModule();
+
   llvm::Value *generateProgram(Program *);
   llvm::Value *generateExpressionStmt(ExpressionStmt *);
   llvm::Value *generateBinary(BinaryExpr *);
-  llvm::Value *generateNumber(NumberExpr *);
+  llvm::Value *generateLiteral(LiteralExpr *);
   llvm::Value *generateVariable(VariableExpr *);
   llvm::Value *generateDeclaration(DeclarationStmt *);
 };

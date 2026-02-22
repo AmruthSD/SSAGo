@@ -28,5 +28,7 @@ int main(int argc, char **argv) {
   SemanticAnalyser semanticAnalyser(parser);
   IRGenerator irGen(semanticAnalyser);
   irGen.getModule()->print(llvm::outs(), nullptr);
+  irGen.optimizeModule();
+  irGen.getModule()->print(llvm::outs(), nullptr);
   return 0;
 }

@@ -16,15 +16,15 @@ void SemanticAnalyser::analyseExpressionStmt(ExpressionStmt *stmt) {
   stmt->expression.get()->analyse(*this);
 }
 
-DATA_TYPE SemanticAnalyser::analyseNumberExpr(NumberExpr *expr) {
-  return DATA_TYPE::DATATYPE_INT;
+DATA_TYPE SemanticAnalyser::analyseLiteralExpr(LiteralExpr *expr) {
+  return expr->dataType;
 }
 
 DATA_TYPE SemanticAnalyser::analyseVariableExpr(VariableExpr *expr) {
   if (symbolTable.find(expr->name) == symbolTable.end())
     throw std::runtime_error("Unknown variable found " + expr->name);
 
-  return symbolTable[expr->name].dataType;
+  return expr->dataType = symbolTable[expr->name].dataType;
 }
 
 DATA_TYPE SemanticAnalyser::analyseBinaryExpr(BinaryExpr *expr) {
@@ -48,7 +48,7 @@ DATA_TYPE SemanticAnalyser::analyseBinaryExpr(BinaryExpr *expr) {
       throw std::runtime_error("Invalid operand type for arithmetic operator");
     }
 
-    return left_type;
+    return expr->dataType = left_type;
   }
 
   case TOKEN_TYPE::ASSIGN: {
@@ -61,7 +61,7 @@ DATA_TYPE SemanticAnalyser::analyseBinaryExpr(BinaryExpr *expr) {
       throw std::runtime_error("Type mismatch in assignment");
     }
 
-    return left_type;
+    return expr->dataType = left_type;
   }
 
   case TOKEN_TYPE::EQUAL:
@@ -78,7 +78,7 @@ DATA_TYPE SemanticAnalyser::analyseBinaryExpr(BinaryExpr *expr) {
       throw std::runtime_error("Invalid operand type for comparison");
     }
 
-    return DATA_TYPE::DATATYPE_INT;
+    return expr->dataType = DATA_TYPE::DATATYPE_INT;
   }
 
   default:

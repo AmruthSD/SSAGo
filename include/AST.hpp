@@ -47,6 +47,7 @@ public:
 
 class Expr : public ASTNode {
 public:
+  DATA_TYPE dataType;
   virtual ~Expr() = default;
   virtual DATA_TYPE analyse(SemanticAnalyser &analyser) = 0;
   virtual llvm::Value *codegen(IRGenerator &irGen) = 0;
@@ -65,11 +66,11 @@ public:
   llvm::Value *codegen(IRGenerator &irGen) override;
 };
 
-class NumberExpr : public Expr {
+class LiteralExpr : public Expr {
 public:
   std::string value;
 
-  explicit NumberExpr(const std::string &val);
+  explicit LiteralExpr(const std::string &val, DATA_TYPE dataType);
   DATA_TYPE analyse(SemanticAnalyser &analyser) override;
   llvm::Value *codegen(IRGenerator &irGen) override;
 };

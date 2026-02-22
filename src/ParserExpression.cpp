@@ -42,8 +42,11 @@ std::unique_ptr<Expr> Parser::parseExpression(int precedence) {
     break;
   }
 
-  case TOKEN_TYPE ::INTEGER_LITERAL: {
-    left = std::make_unique<NumberExpr>((currentToken.lexeme));
+  case TOKEN_TYPE ::INTEGER_LITERAL:
+  case TOKEN_TYPE::STRING_LITERAL:
+  case TOKEN_TYPE::FLOAT_LITERAL: {
+    left = std::make_unique<LiteralExpr>(
+        currentToken.lexeme, dataTypeFromToken.at(currentToken.type));
     advance();
     break;
   }

@@ -33,13 +33,33 @@ Token Lexer::nextToken() {
 
   if (std::isdigit(currentChar)) {
     std::string lexeme;
+    bool isFloat = false;
 
     while (std::isdigit(currentChar)) {
       lexeme += currentChar;
       advance();
     }
 
-    return {lexeme, TOKEN_TYPE::INTEGER_LITERAL};
+    if (currentChar == '.') {
+      isFloat = true;
+      lexeme += currentChar;
+      advance();
+
+      if (!std::isdigit(currentChar)) {
+        throw std::runtime_error("Invalid float literal");
+      }
+
+      while (std::isdigit(currentChar)) {
+        lexeme += currentChar;
+        advance();
+      }
+    }
+
+    if (isFloat) {
+      return {lexeme, TOKEN_TYPE::FLOAT_LITERAL};
+    } else {
+      return {lexeme, TOKEN_TYPE::INTEGER_LITERAL};
+    }
   }
 
   switch (currentChar) {

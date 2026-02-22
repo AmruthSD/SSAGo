@@ -38,14 +38,17 @@ llvm::Value *BinaryExpr::codegen(IRGenerator &irGen) {
   return irGen.generateBinary(this);
 }
 
-NumberExpr::NumberExpr(const std::string &val) : value(val) {}
-
-DATA_TYPE NumberExpr::analyse(SemanticAnalyser &analyser) {
-  return analyser.analyseNumberExpr(this);
+LiteralExpr::LiteralExpr(const std::string &val, DATA_TYPE dataType)
+    : value(val) {
+  this->dataType = dataType;
 }
 
-llvm::Value *NumberExpr::codegen(IRGenerator &irGen) {
-  return irGen.generateNumber(this);
+DATA_TYPE LiteralExpr::analyse(SemanticAnalyser &analyser) {
+  return analyser.analyseLiteralExpr(this);
+}
+
+llvm::Value *LiteralExpr::codegen(IRGenerator &irGen) {
+  return irGen.generateLiteral(this);
 }
 
 VariableExpr::VariableExpr(const std::string &n) : name(n) {}
