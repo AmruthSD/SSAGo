@@ -1,8 +1,10 @@
+#include <IRGenerator.hpp>
 #include <Lexer.hpp>
 #include <Parser.hpp>
 #include <SemanticAnalyser.hpp>
 #include <fstream>
 #include <iostream>
+#include <llvm/Support/raw_ostream.h>
 #include <stdexcept>
 
 int main(int argc, char **argv) {
@@ -24,7 +26,7 @@ int main(int argc, char **argv) {
   Lexer lexer(input);
   Parser parser(lexer);
   SemanticAnalyser semanticAnalyser(parser);
-  semanticAnalyser.analyseAST();
-
+  IRGenerator irGen(semanticAnalyser);
+  irGen.getModule()->print(llvm::outs(), nullptr);
   return 0;
 }

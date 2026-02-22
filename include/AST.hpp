@@ -1,11 +1,13 @@
 #pragma once
 
 #include <Lexer.hpp>
+#include <llvm/IR/Value.h>
 #include <memory>
 #include <string>
 #include <vector>
 
 class SemanticAnalyser;
+class IRGenerator;
 enum class DATA_TYPE : int;
 
 class ASTNode {
@@ -24,12 +26,14 @@ public:
   explicit Program(std::vector<std::unique_ptr<Statement>> stmts);
 
   void analyse(SemanticAnalyser &analyser);
+  llvm::Value *codegen(IRGenerator &irGen);
 };
 
 class Statement : public ASTNode {
 public:
   virtual ~Statement() = default;
   virtual void analyse(SemanticAnalyser &analyser) = 0;
+  virtual llvm::Value *codegen(IRGenerator &irGen) = 0;
 };
 
 class ExpressionStmt : public Statement {
@@ -38,12 +42,14 @@ public:
 
   explicit ExpressionStmt(std::unique_ptr<Expr> expr);
   void analyse(SemanticAnalyser &analyser) override;
+  llvm::Value *codegen(IRGenerator &irGen) override;
 };
 
 class Expr : public ASTNode {
 public:
   virtual ~Expr() = default;
   virtual DATA_TYPE analyse(SemanticAnalyser &analyser) = 0;
+  virtual llvm::Value *codegen(IRGenerator &irGen) = 0;
 };
 
 class BinaryExpr : public Expr {
@@ -56,6 +62,7 @@ public:
              std::unique_ptr<Expr> rhs);
 
   DATA_TYPE analyse(SemanticAnalyser &analyser) override;
+  llvm::Value *codegen(IRGenerator &irGen) override;
 };
 
 class NumberExpr : public Expr {
@@ -64,6 +71,7 @@ public:
 
   explicit NumberExpr(const std::string &val);
   DATA_TYPE analyse(SemanticAnalyser &analyser) override;
+  llvm::Value *codegen(IRGenerator &irGen) override;
 };
 
 class VariableExpr : public Expr {
@@ -72,16 +80,18 @@ public:
 
   explicit VariableExpr(const std::string &n);
   DATA_TYPE analyse(SemanticAnalyser &analyser) override;
+  llvm::Value *codegen(IRGenerator &irGen) override;
 };
 
 class DeclarationStmt : public Statement {
 public:
   std::string identifier;
   DATA_TYPE dataType;
-  std::unique_ptr<Expr> expr;
+  std::unique_ptr<Expr> expr = nullptr;
 
   DeclarationStmt(std::string identifier, DATA_TYPE dataType,
                   std::unique_ptr<Expr> expr);
 
   void analyse(SemanticAnalyser &analyser) override;
+  llvm::Value *codegen(IRGenerator &irGen) override;
 };

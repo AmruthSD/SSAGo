@@ -13,10 +13,10 @@ class SemanticAnalyser {
 private:
   Parser parser;
 
-  std::unique_ptr<Program> ast;
   std::unordered_map<std::string, SymbolTableEntry> symbolTable;
 
 public:
+  std::unique_ptr<Program> ast;
   SemanticAnalyser(Parser &parser);
   void analyseAST();
   void analyseProgram(Program *program);
