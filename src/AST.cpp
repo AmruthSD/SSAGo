@@ -51,6 +51,17 @@ llvm::Value *LiteralExpr::codegen(IRGenerator &irGen) {
   return irGen.generateLiteral(this);
 }
 
+CastExpr::CastExpr(std::unique_ptr<Expr> expr, DATA_TYPE dataType)
+    : expr(std::move(expr)) {
+  this->dataType = dataType;
+}
+
+DATA_TYPE CastExpr::analyse(SemanticAnalyser &analyser) { return dataType; }
+
+llvm::Value *CastExpr::codegen(IRGenerator &irGen) {
+  return irGen.generateCast(this);
+}
+
 VariableExpr::VariableExpr(const std::string &n) : name(n) {}
 
 DATA_TYPE VariableExpr::analyse(SemanticAnalyser &analyser) {

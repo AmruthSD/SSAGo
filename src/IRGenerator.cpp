@@ -3,6 +3,7 @@
 #include "llvm/Passes/PassPlugin.h"
 #include <IRGenerator.hpp>
 #include <SemanticAnalyser.hpp>
+#include <iostream>
 #include <llvm/IR/Verifier.h>
 
 llvm::Type *getLLVMType(DATA_TYPE type, llvm::LLVMContext &context) {
@@ -76,25 +77,37 @@ llvm::Value *IRGenerator::generateLiteral(LiteralExpr *expr) {
   throw std::runtime_error("Unknown literal type");
 }
 
+llvm::Value *IRGenerator::generateCast(CastExpr *expr) {
+
+  llvm::Value *val = expr->expr->codegen(*this);
+  if (!val)
+    return nullptr;
+
+  llvm::Type *targetType = getLLVMType(expr->dataType, context);
+
+  if (val->getType() == targetType)
+    return val;
+  if (val->getType()->isIntegerTy() && targetType->isDoubleTy()) {
+
+    return builder.CreateSIToFP(val, targetType, "intToDouble");
+  }
+  if (val->getType()->isDoubleTy() && targetType->isIntegerTy()) {
+
+    return builder.CreateFPToSI(val, targetType, "doubleToInt");
+  }
+
+  throw std::runtime_error("Unsupported cast");
+}
+
 llvm::Value *IRGenerator::generateBinary(BinaryExpr *expr) {
+
   llvm::Value *L = expr->left->codegen(*this);
   llvm::Value *R = expr->right->codegen(*this);
 
   if (!L || !R)
     return nullptr;
 
-  llvm::Type *doubleTy = llvm::Type::getDoubleTy(context);
-
-  bool LIsDouble = L->getType()->isDoubleTy();
-  bool RIsDouble = R->getType()->isDoubleTy();
-
-  if (LIsDouble || RIsDouble) {
-
-    if (!LIsDouble)
-      L = builder.CreateSIToFP(L, doubleTy, "intToDoubleL");
-
-    if (!RIsDouble)
-      R = builder.CreateSIToFP(R, doubleTy, "intToDoubleR");
+  if (L->getType()->isDoubleTy()) {
 
     switch (expr->op) {
     case TOKEN_TYPE::PLUS:
@@ -151,8 +164,7 @@ llvm::Value *IRGenerator::generateDeclaration(DeclarationStmt *stmt) {
   if (stmt->expr != nullptr) {
     initValue = stmt->expr->codegen(*this);
   } else {
-    initValue =
-        llvm::ConstantInt::get(getLLVMType(stmt->expr->dataType, context), 0);
+    initValue = llvm::ConstantInt::get(getLLVMType(stmt->dataType, context), 0);
   }
 
   builder.CreateStore(initValue, alloca);

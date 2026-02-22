@@ -28,6 +28,7 @@ public:
   llvm::Value *generateExpressionStmt(ExpressionStmt *);
   llvm::Value *generateBinary(BinaryExpr *);
   llvm::Value *generateLiteral(LiteralExpr *);
+  llvm::Value *generateCast(CastExpr *);
   llvm::Value *generateVariable(VariableExpr *);
   llvm::Value *generateDeclaration(DeclarationStmt *);
 };

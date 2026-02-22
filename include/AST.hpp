@@ -75,6 +75,15 @@ public:
   llvm::Value *codegen(IRGenerator &irGen) override;
 };
 
+class CastExpr : public Expr {
+public:
+  std::unique_ptr<Expr> expr = nullptr;
+
+  explicit CastExpr(std::unique_ptr<Expr> expr, DATA_TYPE dataType);
+  DATA_TYPE analyse(SemanticAnalyser &analyser) override;
+  llvm::Value *codegen(IRGenerator &irGen) override;
+};
+
 class VariableExpr : public Expr {
 public:
   std::string name;
