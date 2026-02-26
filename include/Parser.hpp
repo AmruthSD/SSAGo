@@ -29,6 +29,7 @@ private:
   std::unique_ptr<Program> parseProgram();
   std::unique_ptr<Statement> parseStatement();
   std::unique_ptr<Statement> parseExpressionStatement();
+  std::unique_ptr<Statement> parseFunctionStatement();
   std::unique_ptr<Expr> parseExpression(int precedence = 0);
   std::unique_ptr<Statement> parseDeclarationStatement();
 

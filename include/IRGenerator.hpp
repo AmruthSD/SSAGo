@@ -26,9 +26,16 @@ public:
 
   llvm::Value *generateProgram(Program *);
   llvm::Value *generateExpressionStmt(ExpressionStmt *);
+  llvm::Value *generateFunction(FunctionStmt *);
   llvm::Value *generateBinary(BinaryExpr *);
   llvm::Value *generateLiteral(LiteralExpr *);
   llvm::Value *generateCast(CastExpr *);
   llvm::Value *generateVariable(VariableExpr *);
   llvm::Value *generateDeclaration(DeclarationStmt *);
+
+  llvm::Function *declareExternalFunction(const std::string &name,
+                                          llvm::Type *returnType,
+                                          std::vector<llvm::Type *> paramTypes,
+                                          bool isVarArg);
+  llvm::Function *getOrDeclarePrintf();
 };

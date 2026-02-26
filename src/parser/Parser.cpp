@@ -36,6 +36,8 @@ std::unique_ptr<Statement> Parser::parseStatement() {
 
   if (dataTypeFromToken.find(currentToken.type) != dataTypeFromToken.end()) {
     return parseDeclarationStatement();
+  } else if (currentToken.type == TOKEN_TYPE::FUNCTION) {
+    return parseFunctionStatement();
   }
 
   return parseExpressionStatement();

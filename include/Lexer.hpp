@@ -9,6 +9,7 @@ enum class TOKEN_TYPE {
   DATATYPE_INT,
   DATATYPE_FLOAT,
   DATATYPE_STRING,
+  FUNCTION,
 
   // Literals
   INTEGER_LITERAL,
@@ -49,7 +50,8 @@ private:
   const std::unordered_map<std::string, TOKEN_TYPE> keywords = {
       {"int", TOKEN_TYPE::DATATYPE_INT},
       {"float", TOKEN_TYPE::DATATYPE_FLOAT},
-      {"string", TOKEN_TYPE::DATATYPE_STRING}};
+      {"string", TOKEN_TYPE::DATATYPE_STRING},
+      {"functions", TOKEN_TYPE::FUNCTION}};
 
   void advance();
   void skipWhitespace();

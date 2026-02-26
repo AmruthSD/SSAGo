@@ -105,3 +105,18 @@ public:
   void analyse(SemanticAnalyser &analyser) override;
   llvm::Value *codegen(IRGenerator &irGen) override;
 };
+
+class FunctionStmt : public Statement {
+public:
+  std::string identifier;
+  DATA_TYPE dataType;
+  std::unique_ptr<Program> prgm = nullptr;
+  std::vector<std::pair<std::string, DATA_TYPE>> arguments;
+
+  FunctionStmt(std::string identifier, DATA_TYPE dataType,
+               std::unique_ptr<Program> prog,
+               std::vector<std::pair<std::string, DATA_TYPE>> args);
+
+  void analyse(SemanticAnalyser &analyser) override;
+  llvm::Value *codegen(IRGenerator &irGen) override;
+};

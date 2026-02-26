@@ -84,3 +84,17 @@ void DeclarationStmt::analyse(SemanticAnalyser &analyser) {
 llvm::Value *DeclarationStmt::codegen(IRGenerator &irGen) {
   return irGen.generateDeclaration(this);
 }
+
+FunctionStmt::FunctionStmt(std::string identifier, DATA_TYPE dataType,
+                           std::unique_ptr<Program> prog,
+                           std::vector<std::pair<std::string, DATA_TYPE>> args)
+    : identifier(identifier), prgm(std::move(prog)), arguments(std::move(args)),
+      dataType(dataType) {}
+
+void FunctionStmt::analyse(SemanticAnalyser &analyser) {
+  analyser.analyseFunctionStmt(this);
+}
+
+llvm::Value *FunctionStmt::codegen(IRGenerator &irGen) {
+  return irGen.generateFunction(this);
+}

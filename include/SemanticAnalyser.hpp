@@ -21,6 +21,7 @@ public:
   void analyseAST();
   void analyseProgram(Program *program);
   void analyseDeclarationStmt(DeclarationStmt *stmt);
+  void analyseFunctionStmt(FunctionStmt *stmt);
   void analyseExpressionStmt(ExpressionStmt *stmt);
   DATA_TYPE analyseBinaryExpr(BinaryExpr *expr);
   DATA_TYPE analyseLiteralExpr(LiteralExpr *expr);
