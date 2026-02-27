@@ -9,6 +9,7 @@ enum class TOKEN_TYPE {
   DATATYPE_INT,
   DATATYPE_FLOAT,
   DATATYPE_STRING,
+  DATATYPE_VOID,
   FUNCTION,
 
   // Literals
@@ -32,6 +33,9 @@ enum class TOKEN_TYPE {
   LPAREN,    // (
   RPAREN,    // )
   SEMICOLON, // ;
+  COMMA,     // ,
+  LCURLY,    // {
+  RCURLY,    // }
 
   END_OF_FILE,
   UNKNOWN
@@ -51,7 +55,8 @@ private:
       {"int", TOKEN_TYPE::DATATYPE_INT},
       {"float", TOKEN_TYPE::DATATYPE_FLOAT},
       {"string", TOKEN_TYPE::DATATYPE_STRING},
-      {"functions", TOKEN_TYPE::FUNCTION}};
+      {"function", TOKEN_TYPE::FUNCTION},
+      {"void", TOKEN_TYPE::DATATYPE_VOID}};
 
   void advance();
   void skipWhitespace();

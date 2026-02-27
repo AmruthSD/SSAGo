@@ -13,7 +13,8 @@ private:
   llvm::LLVMContext context;
   std::unique_ptr<llvm::Module> module;
   llvm::IRBuilder<> builder;
-  std::unordered_map<std::string, llvm::Value *> namedValues;
+
+  std::vector<std::unordered_map<std::string, llvm::Value *>> namedValues;
 
 public:
   IRGenerator(SemanticAnalyser &semanticAnalyser);
@@ -27,6 +28,7 @@ public:
   llvm::Value *generateProgram(Program *);
   llvm::Value *generateExpressionStmt(ExpressionStmt *);
   llvm::Value *generateFunction(FunctionStmt *);
+  llvm::Value *generateBlock(BlockStmt *);
   llvm::Value *generateBinary(BinaryExpr *);
   llvm::Value *generateLiteral(LiteralExpr *);
   llvm::Value *generateCast(CastExpr *);
@@ -38,4 +40,5 @@ public:
                                           std::vector<llvm::Type *> paramTypes,
                                           bool isVarArg);
   llvm::Function *getOrDeclarePrintf();
+  llvm::Type *getLLVMType(DATA_TYPE type, llvm::LLVMContext &context);
 };

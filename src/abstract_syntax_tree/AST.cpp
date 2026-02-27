@@ -31,7 +31,7 @@ BinaryExpr::BinaryExpr(TOKEN_TYPE oper, std::unique_ptr<Expr> lhs,
     : op(oper), left(std::move(lhs)), right(std::move(rhs)) {}
 
 DATA_TYPE BinaryExpr::analyse(SemanticAnalyser &analyser) {
-  return analyser.analyseBinaryExpr(this);
+  return dataType = analyser.analyseBinaryExpr(this);
 }
 
 llvm::Value *BinaryExpr::codegen(IRGenerator &irGen) {
@@ -44,7 +44,7 @@ LiteralExpr::LiteralExpr(const std::string &val, DATA_TYPE dataType)
 }
 
 DATA_TYPE LiteralExpr::analyse(SemanticAnalyser &analyser) {
-  return analyser.analyseLiteralExpr(this);
+  return dataType = analyser.analyseLiteralExpr(this);
 }
 
 llvm::Value *LiteralExpr::codegen(IRGenerator &irGen) {
@@ -65,7 +65,7 @@ llvm::Value *CastExpr::codegen(IRGenerator &irGen) {
 VariableExpr::VariableExpr(const std::string &n) : name(n) {}
 
 DATA_TYPE VariableExpr::analyse(SemanticAnalyser &analyser) {
-  return analyser.analyseVariableExpr(this);
+  return dataType = analyser.analyseVariableExpr(this);
 }
 
 llvm::Value *VariableExpr::codegen(IRGenerator &irGen) {
@@ -86,9 +86,9 @@ llvm::Value *DeclarationStmt::codegen(IRGenerator &irGen) {
 }
 
 FunctionStmt::FunctionStmt(std::string identifier, DATA_TYPE dataType,
-                           std::unique_ptr<Program> prog,
+                           std::unique_ptr<BlockStmt> body,
                            std::vector<std::pair<std::string, DATA_TYPE>> args)
-    : identifier(identifier), prgm(std::move(prog)), arguments(std::move(args)),
+    : identifier(identifier), body(std::move(body)), arguments(std::move(args)),
       dataType(dataType) {}
 
 void FunctionStmt::analyse(SemanticAnalyser &analyser) {
@@ -97,4 +97,15 @@ void FunctionStmt::analyse(SemanticAnalyser &analyser) {
 
 llvm::Value *FunctionStmt::codegen(IRGenerator &irGen) {
   return irGen.generateFunction(this);
+}
+
+BlockStmt::BlockStmt(std::vector<std::unique_ptr<Statement>> body)
+    : body(std::move(body)) {}
+
+void BlockStmt::analyse(SemanticAnalyser &analyser) {
+  analyser.analyseBlock(this);
+}
+
+llvm::Value *BlockStmt::codegen(IRGenerator &irGen) {
+  return irGen.generateBlock(this);
 }

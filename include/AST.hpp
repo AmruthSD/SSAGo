@@ -106,15 +106,24 @@ public:
   llvm::Value *codegen(IRGenerator &irGen) override;
 };
 
+class BlockStmt : public Statement {
+public:
+  std::vector<std::unique_ptr<Statement>> body;
+
+  BlockStmt(std::vector<std::unique_ptr<Statement>> body);
+
+  void analyse(SemanticAnalyser &analyser) override;
+  llvm::Value *codegen(IRGenerator &irGen) override;
+};
+
 class FunctionStmt : public Statement {
 public:
   std::string identifier;
   DATA_TYPE dataType;
-  std::unique_ptr<Program> prgm = nullptr;
   std::vector<std::pair<std::string, DATA_TYPE>> arguments;
-
+  std::unique_ptr<BlockStmt> body;
   FunctionStmt(std::string identifier, DATA_TYPE dataType,
-               std::unique_ptr<Program> prog,
+               std::unique_ptr<BlockStmt> body,
                std::vector<std::pair<std::string, DATA_TYPE>> args);
 
   void analyse(SemanticAnalyser &analyser) override;

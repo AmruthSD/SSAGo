@@ -1,5 +1,6 @@
-#include "Lexer.hpp"
+#include <Lexer.hpp>
 #include <cctype>
+#include <iostream>
 
 Lexer::Lexer(std::istream &in) : input(in), currentChar(0) { advance(); }
 
@@ -26,8 +27,9 @@ Token Lexer::nextToken() {
     }
 
     auto it = keywords.find(lexeme);
-    if (it != keywords.end())
+    if (it != keywords.end()) {
       return {lexeme, it->second};
+    }
     return {lexeme, TOKEN_TYPE::IDENTIFIER};
   }
 
@@ -117,6 +119,18 @@ Token Lexer::nextToken() {
   case ';':
     advance();
     return {";", TOKEN_TYPE::SEMICOLON};
+
+  case ',':
+    advance();
+    return {",", TOKEN_TYPE::COMMA};
+
+  case '{':
+    advance();
+    return {"{", TOKEN_TYPE::LCURLY};
+
+  case '}':
+    advance();
+    return {"}", TOKEN_TYPE::RCURLY};
   }
 
   if (currentChar == '"') {

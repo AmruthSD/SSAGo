@@ -6,13 +6,17 @@
 #include <iostream>
 #include <llvm/IR/Verifier.h>
 
-llvm::Type *getLLVMType(DATA_TYPE type, llvm::LLVMContext &context) {
+llvm::Type *IRGenerator::getLLVMType(DATA_TYPE type,
+                                     llvm::LLVMContext &context) {
   switch (type) {
   case DATA_TYPE::DATATYPE_INT:
     return llvm::Type::getInt32Ty(context);
 
   case DATA_TYPE::DATATYPE_FLOAT:
     return llvm::Type::getDoubleTy(context);
+
+  case DATA_TYPE::DATATYPE_VOID:
+    return llvm::Type::getVoidTy(context);
 
   default:
     throw std::runtime_error("Unknown DATA_TYPE");
@@ -23,7 +27,11 @@ IRGenerator::IRGenerator(SemanticAnalyser &semanticAnalyser)
     : semanticAnalyser(semanticAnalyser),
       module(std::make_unique<llvm::Module>("compiler_module", context)),
       builder(context) {
+  namedValues.emplace_back();
   semanticAnalyser.ast.get()->codegen(*this);
+
+  module->print(llvm::errs(), nullptr);
+
   if (llvm::verifyModule(*module, &llvm::errs())) {
     llvm::errs() << "Module verification failed!\n";
     exit(1);
@@ -37,27 +45,17 @@ llvm::Module *IRGenerator::getModule() { return module.get(); }
 llvm::IRBuilder<> &IRGenerator::getBuilder() { return builder; }
 
 llvm::Value *IRGenerator::generateProgram(Program *program) {
-  llvm::FunctionType *funcType =
-      llvm::FunctionType::get(llvm::Type::getInt32Ty(context), false);
-
-  llvm::Function *mainFunc = llvm::Function::Create(
-      funcType, llvm::Function::ExternalLinkage, "main", module.get());
-
-  llvm::BasicBlock *entry =
-      llvm::BasicBlock::Create(context, "entry", mainFunc);
-
-  builder.SetInsertPoint(entry);
-
   for (auto &stmt : program->statements) {
     stmt->codegen(*this);
   }
 
-  builder.CreateRet(llvm::ConstantInt::get(llvm::Type::getInt32Ty(context), 0));
-
-  return mainFunc;
+  return nullptr;
 }
 
 llvm::Value *IRGenerator::generateExpressionStmt(ExpressionStmt *stmt) {
+  if (namedValues.size() == 1)
+    throw std::runtime_error("Unable to have expression as global");
+
   return stmt->expression->codegen(*this);
 }
 
@@ -146,32 +144,75 @@ llvm::Value *IRGenerator::generateBinary(BinaryExpr *expr) {
 }
 
 llvm::Value *IRGenerator::generateVariable(VariableExpr *expr) {
-  llvm::Value *alloca = namedValues[expr->name];
+  llvm::Value *ptr = nullptr;
 
-  if (!alloca)
+  for (auto it = namedValues.rbegin(); it != namedValues.rend(); ++it) {
+    auto found = it->find(expr->name);
+    if (found != it->end()) {
+      ptr = found->second;
+      break;
+    }
+  }
+
+  if (!ptr) {
+    llvm::errs() << "Unknown variable: " << expr->name << "\n";
     return nullptr;
+  }
 
-  return builder.CreateLoad(getLLVMType(expr->dataType, context), alloca,
-                            expr->name + "_val");
+  if (ptr->getType()->isPointerTy()) {
+    llvm::Type *elementType = ptr->getType()->getPointerElementType();
+
+    return builder.CreateLoad(elementType, ptr, expr->name + "_val");
+  }
+
+  return ptr;
 }
 
 llvm::Value *IRGenerator::generateDeclaration(DeclarationStmt *stmt) {
-  llvm::Value *initValue = nullptr;
+  llvm::Type *type = getLLVMType(stmt->dataType, context);
 
-  llvm::AllocaInst *alloca = builder.CreateAlloca(
-      getLLVMType(stmt->dataType, context), nullptr, stmt->identifier);
+  if (!builder.GetInsertBlock()) {
 
-  if (stmt->expr != nullptr) {
-    initValue = stmt->expr->codegen(*this);
+    llvm::Constant *initValue = nullptr;
+
+    if (stmt->expr) {
+      llvm::Value *val = stmt->expr->codegen(*this);
+
+      initValue = llvm::dyn_cast<llvm::Constant>(val);
+      if (!initValue) {
+        llvm::errs() << "Global initializer must be constant!\n";
+        exit(1);
+      }
+
+    } else {
+      initValue = llvm::Constant::getNullValue(type);
+    }
+
+    auto *global = new llvm::GlobalVariable(*module, type, false,
+                                            llvm::GlobalValue::ExternalLinkage,
+                                            initValue, stmt->identifier);
+
+    namedValues.back()[stmt->identifier] = global;
+    return global;
   } else {
-    initValue = llvm::ConstantInt::get(getLLVMType(stmt->dataType, context), 0);
+    llvm::Value *initValue = nullptr;
+
+    llvm::AllocaInst *alloca = builder.CreateAlloca(
+        getLLVMType(stmt->dataType, context), nullptr, stmt->identifier);
+
+    if (stmt->expr != nullptr) {
+      initValue = stmt->expr->codegen(*this);
+    } else {
+      initValue =
+          llvm::ConstantInt::get(getLLVMType(stmt->dataType, context), 0);
+    }
+
+    builder.CreateStore(initValue, alloca);
+
+    namedValues.back()[stmt->identifier] = alloca;
+
+    return alloca;
   }
-
-  builder.CreateStore(initValue, alloca);
-
-  namedValues[stmt->identifier] = alloca;
-
-  return alloca;
 }
 
 void IRGenerator::optimizeModule() {
