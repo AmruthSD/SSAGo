@@ -129,3 +129,12 @@ public:
   void analyse(SemanticAnalyser &analyser) override;
   llvm::Value *codegen(IRGenerator &irGen) override;
 };
+
+class ReturnStmt : public Statement {
+public:
+  std::unique_ptr<Expr> expr;
+
+  ReturnStmt(std::unique_ptr<Expr> expr);
+  void analyse(SemanticAnalyser &analyser) override;
+  llvm::Value *codegen(IRGenerator &irGen) override;
+};

@@ -40,6 +40,7 @@ private:
   std::unique_ptr<BlockStmt> parseBlockStatement();
   std::unique_ptr<Expr> parseExpression(int precedence = 0);
   std::unique_ptr<Statement> parseDeclarationStatement();
+  std::unique_ptr<Statement> parseReturnStatement();
 
 public:
   Parser(Lexer &lexer);

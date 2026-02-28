@@ -57,3 +57,10 @@ std::unique_ptr<BlockStmt> Parser::parseBlockStatement() {
 
   return std::make_unique<BlockStmt>(std::move(body));
 }
+
+std::unique_ptr<Statement> Parser::parseReturnStatement() {
+  advance();
+  auto expr = parseExpression();
+  expect(TOKEN_TYPE::SEMICOLON, "Expected semicolon at end of return");
+  return std::make_unique<ReturnStmt>(std::move(expr));
+}

@@ -5,6 +5,7 @@ void SemanticAnalyser::analyseFunctionStmt(FunctionStmt *func) {
     throw std::runtime_error("function identifier is used " + func->identifier);
 
   symbolTable[func->identifier] = {func->dataType, true};
+  current_function_type = func->dataType;
 
   for (auto param : func->arguments) {
     if (symbolTable.find(param.first) != symbolTable.end())
@@ -29,4 +30,15 @@ void SemanticAnalyser::analyseBlock(BlockStmt *stmt) {
     }
   }
   block_number--;
+}
+
+void SemanticAnalyser::analyseReturn(ReturnStmt *stmt) {
+  if (block_number == 0)
+    throw std::runtime_error("Return cant be in the global scope");
+
+  DATA_TYPE exprDataType = stmt->expr->analyse(*this);
+  if (exprDataType != current_function_type) {
+    stmt->expr = std::make_unique<CastExpr>(std::move(stmt->expr),
+                                            current_function_type);
+  }
 }

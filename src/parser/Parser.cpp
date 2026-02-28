@@ -38,6 +38,8 @@ std::unique_ptr<Statement> Parser::parseStatement() {
     return parseDeclarationStatement();
   } else if (currentToken.type == TOKEN_TYPE::FUNCTION) {
     return parseFunctionStatement();
+  } else if (currentToken.type == TOKEN_TYPE::RETURN) {
+    return parseReturnStatement();
   }
 
   return parseExpressionStatement();

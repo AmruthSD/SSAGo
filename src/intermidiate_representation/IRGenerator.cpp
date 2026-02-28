@@ -30,7 +30,7 @@ IRGenerator::IRGenerator(SemanticAnalyser &semanticAnalyser)
   namedValues.emplace_back();
   semanticAnalyser.ast.get()->codegen(*this);
 
-  module->print(llvm::errs(), nullptr);
+  // module->print(llvm::errs(), nullptr);
 
   if (llvm::verifyModule(*module, &llvm::errs())) {
     llvm::errs() << "Module verification failed!\n";

@@ -34,6 +34,7 @@ public:
   llvm::Value *generateCast(CastExpr *);
   llvm::Value *generateVariable(VariableExpr *);
   llvm::Value *generateDeclaration(DeclarationStmt *);
+  llvm::Value *generateReturn(ReturnStmt *);
 
   llvm::Function *declareExternalFunction(const std::string &name,
                                           llvm::Type *returnType,

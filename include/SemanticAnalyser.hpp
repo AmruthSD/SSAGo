@@ -17,6 +17,7 @@ private:
   Parser parser;
   int block_number = 0;
   std::unordered_map<std::string, SymbolTableEntry> symbolTable;
+  DATA_TYPE current_function_type = DATA_TYPE::DATATYPE_INT;
 
 public:
   std::unique_ptr<Program> ast;
@@ -26,6 +27,7 @@ public:
   void analyseDeclarationStmt(DeclarationStmt *stmt);
   void analyseFunctionStmt(FunctionStmt *stmt);
   void analyseBlock(BlockStmt *stmt);
+  void analyseReturn(ReturnStmt *stmt);
   void analyseExpressionStmt(ExpressionStmt *stmt);
   DATA_TYPE analyseBinaryExpr(BinaryExpr *expr);
   DATA_TYPE analyseLiteralExpr(LiteralExpr *expr);

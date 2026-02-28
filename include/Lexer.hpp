@@ -11,6 +11,7 @@ enum class TOKEN_TYPE {
   DATATYPE_STRING,
   DATATYPE_VOID,
   FUNCTION,
+  RETURN,
 
   // Literals
   INTEGER_LITERAL,
@@ -56,7 +57,8 @@ private:
       {"float", TOKEN_TYPE::DATATYPE_FLOAT},
       {"string", TOKEN_TYPE::DATATYPE_STRING},
       {"function", TOKEN_TYPE::FUNCTION},
-      {"void", TOKEN_TYPE::DATATYPE_VOID}};
+      {"void", TOKEN_TYPE::DATATYPE_VOID},
+      {"return", TOKEN_TYPE::RETURN}};
 
   void advance();
   void skipWhitespace();

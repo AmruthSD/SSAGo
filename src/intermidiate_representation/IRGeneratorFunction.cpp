@@ -27,6 +27,9 @@ llvm::Function *IRGenerator::getOrDeclarePrintf() {
 
 llvm::Value *IRGenerator::generateFunction(FunctionStmt *func) {
 
+  if (namedValues.size() != 1)
+    throw std::runtime_error("Unable to have function as non global");
+
   std::vector<llvm::Type *> paramTypes;
   for (auto &[name, type] : func->arguments)
     paramTypes.push_back(getLLVMType(type, context));
@@ -92,4 +95,39 @@ llvm::Value *IRGenerator::generateBlock(BlockStmt *block) {
 
   namedValues.pop_back();
   return nullptr;
+}
+
+llvm::Value *IRGenerator::generateReturn(ReturnStmt *stmt) {
+  llvm::Function *function = builder.GetInsertBlock()->getParent();
+  llvm::Type *returnType = function->getReturnType();
+
+  if (returnType->isVoidTy()) {
+    if (stmt->expr != nullptr) {
+      llvm::errs() << "Cannot return a value from void function\n";
+      return nullptr;
+    }
+    return builder.CreateRetVoid();
+  }
+
+  if (stmt->expr == nullptr) {
+    llvm::errs() << "Non-void function must return a value\n";
+    return nullptr;
+  }
+
+  llvm::Value *retValue = stmt->expr->codegen(*this);
+  if (!retValue)
+    return nullptr;
+
+  if (retValue->getType() != returnType) {
+    if (returnType->isDoubleTy() && retValue->getType()->isIntegerTy()) {
+      retValue = builder.CreateSIToFP(retValue, returnType);
+    } else if (returnType->isIntegerTy() && retValue->getType()->isDoubleTy()) {
+      retValue = builder.CreateFPToSI(retValue, returnType);
+    } else {
+      llvm::errs() << "Return type mismatch\n";
+      return nullptr;
+    }
+  }
+
+  return builder.CreateRet(retValue);
 }

@@ -109,3 +109,13 @@ void BlockStmt::analyse(SemanticAnalyser &analyser) {
 llvm::Value *BlockStmt::codegen(IRGenerator &irGen) {
   return irGen.generateBlock(this);
 }
+
+ReturnStmt::ReturnStmt(std::unique_ptr<Expr> expr) : expr(std::move(expr)) {}
+
+void ReturnStmt::analyse(SemanticAnalyser &analyser) {
+  analyser.analyseReturn(this);
+}
+
+llvm::Value *ReturnStmt::codegen(IRGenerator &irGen) {
+  return irGen.generateReturn(this);
+}
