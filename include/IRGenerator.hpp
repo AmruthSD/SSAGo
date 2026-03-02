@@ -24,6 +24,8 @@ public:
   llvm::IRBuilder<> &getBuilder();
 
   void optimizeModule();
+  void generateAllExternalFUnctions();
+  void writeIRToFile(const std::string &filename);
 
   llvm::Value *generateProgram(Program *);
   llvm::Value *getVariablePointer(std::string &name);
@@ -42,5 +44,6 @@ public:
                                           std::vector<llvm::Type *> paramTypes,
                                           bool isVarArg);
   llvm::Function *getOrDeclarePrintf();
+  llvm::Function *getOrDeclareScanf();
   llvm::Type *getLLVMType(DATA_TYPE type, llvm::LLVMContext &context);
 };

@@ -27,8 +27,7 @@ int main(int argc, char **argv) {
   Parser parser(lexer);
   SemanticAnalyser semanticAnalyser(parser);
   IRGenerator irGen(semanticAnalyser);
-  irGen.getModule()->print(llvm::outs(), nullptr);
   irGen.optimizeModule();
-  irGen.getModule()->print(llvm::outs(), nullptr);
+  irGen.writeIRToFile("output.ll");
   return 0;
 }

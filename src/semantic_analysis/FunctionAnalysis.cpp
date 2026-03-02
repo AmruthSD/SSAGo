@@ -1,3 +1,4 @@
+#include <CommonExternalFunctions.hpp>
 #include <SemanticAnalyser.hpp>
 
 void SemanticAnalyser::analyseFunctionStmt(FunctionStmt *func) {
@@ -55,21 +56,32 @@ DATA_TYPE SemanticAnalyser::analyseFunctionCall(CallExpr *expr) {
     throw std::runtime_error("Invalid function call target");
 
   std::string functionName = var->name;
-  auto it = functionSymbolTable.find(functionName);
-  if (it == functionSymbolTable.end())
-    throw std::runtime_error("Function not declared: " + functionName);
+  bool fun_external = false;
+  if (external_functions.find(functionName) != external_functions.end())
+    fun_external = true;
 
-  FunctionSymbolTableEntry &prop = it->second;
-  if (prop.argumentsTypes.size() != expr->arguments.size())
-    throw std::runtime_error("Number of arguments are not right in call for " +
-                             functionName);
+  if (fun_external) {
+    for (int i = 0; i < expr->arguments.size(); i++) {
+      DATA_TYPE expr_type = expr->arguments[i]->analyse(*this);
+    }
+    return DATA_TYPE::DATATYPE_VOID;
+  } else {
+    auto it = functionSymbolTable.find(functionName);
+    if (it == functionSymbolTable.end())
+      throw std::runtime_error("Function not declared: " + functionName);
 
-  for (int i = 0; i < prop.argumentsTypes.size(); i++) {
-    DATA_TYPE expr_type = expr->arguments[i]->analyse(*this);
-    if (expr_type != prop.argumentsTypes[i])
-      expr->arguments[i] = std::make_unique<CastExpr>(
-          std::move(expr->arguments[i]), prop.argumentsTypes[i]);
+    FunctionSymbolTableEntry &prop = it->second;
+    if (prop.argumentsTypes.size() != expr->arguments.size())
+      throw std::runtime_error(
+          "Number of arguments are not right in call for " + functionName);
+
+    for (int i = 0; i < prop.argumentsTypes.size(); i++) {
+      DATA_TYPE expr_type = expr->arguments[i]->analyse(*this);
+      if (expr_type != prop.argumentsTypes[i])
+        expr->arguments[i] = std::make_unique<CastExpr>(
+            std::move(expr->arguments[i]), prop.argumentsTypes[i]);
+    }
+
+    return prop.returnType;
   }
-
-  return prop.returnType;
 }

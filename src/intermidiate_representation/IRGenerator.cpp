@@ -27,6 +27,7 @@ IRGenerator::IRGenerator(SemanticAnalyser &semanticAnalyser)
     : semanticAnalyser(semanticAnalyser),
       module(std::make_unique<llvm::Module>("compiler_module", context)),
       builder(context) {
+  generateAllExternalFUnctions();
   namedValues.emplace_back();
   semanticAnalyser.ast.get()->codegen(*this);
 
@@ -70,7 +71,6 @@ llvm::Value *IRGenerator::generateExpressionStmt(ExpressionStmt *stmt) {
 }
 
 llvm::Value *IRGenerator::generateLiteral(LiteralExpr *expr) {
-  int value = std::stoi(expr->value);
   DATA_TYPE dataType = expr->dataType;
   switch (dataType) {
   case DATA_TYPE::DATATYPE_INT:
@@ -80,6 +80,9 @@ llvm::Value *IRGenerator::generateLiteral(LiteralExpr *expr) {
   case DATA_TYPE::DATATYPE_FLOAT:
     return llvm::ConstantFP::get(getLLVMType(dataType, context),
                                  std::stof(expr->value));
+
+  case DATA_TYPE::DATATYPE_STRING:
+    return builder.CreateGlobalStringPtr(expr->value);
   }
 
   throw std::runtime_error("Unknown literal type");

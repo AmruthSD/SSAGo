@@ -1,0 +1,5 @@
+ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
+IR_FILE="$ROOT_DIR/build/output.ll"
+PROGRAM="$ROOT_DIR/build/program"
+clang "$IR_FILE" -o "$PROGRAM"
+"$PROGRAM"

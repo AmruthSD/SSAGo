@@ -1,6 +1,7 @@
 #pragma once
 
 #include <AST.hpp>
+#include <CommonExternalFunctions.hpp>
 #include <Parser.hpp>
 #include <memory>
 #include <stack>

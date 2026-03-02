@@ -1,29 +1,6 @@
+#include <CommonExternalFunctions.hpp>
 #include <IRGenerator.hpp>
 #include <llvm/IR/Verifier.h>
-
-llvm::Function *IRGenerator::declareExternalFunction(
-    const std::string &name, llvm::Type *returnType,
-    std::vector<llvm::Type *> paramTypes, bool isVarArg) {
-  llvm::Function *func = module->getFunction(name);
-  if (func)
-    return func;
-
-  llvm::FunctionType *funcType =
-      llvm::FunctionType::get(returnType, paramTypes, isVarArg);
-
-  func = llvm::Function::Create(funcType, llvm::Function::ExternalLinkage, name,
-                                module.get());
-
-  return func;
-}
-
-llvm::Function *IRGenerator::getOrDeclarePrintf() {
-
-  llvm::Type *i8PtrTy = llvm::Type::getInt8PtrTy(context);
-
-  return declareExternalFunction("printf", llvm::Type::getInt32Ty(context),
-                                 {i8PtrTy}, true);
-}
 
 llvm::Value *IRGenerator::generateFunction(FunctionStmt *func) {
 
@@ -131,6 +108,7 @@ llvm::Value *IRGenerator::generateReturn(ReturnStmt *stmt) {
 
   return builder.CreateRet(retValue);
 }
+
 llvm::Value *IRGenerator::generateFunctionCall(CallExpr *expr) {
 
   auto *var = dynamic_cast<VariableExpr *>(expr->callee.get());
