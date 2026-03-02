@@ -1,0 +1,17 @@
+#include <Parser.hpp>
+
+std::unique_ptr<Statement> Parser::parseIfElseStatement() {
+  advance();
+  expect(TOKEN_TYPE::LPAREN, "start of condition");
+  std::unique_ptr<Expr> ifexpr = parseExpression();
+  expect(TOKEN_TYPE::RPAREN, "end of condition");
+
+  std::unique_ptr<Statement> ifstmt = parseStatement();
+  std::unique_ptr<Statement> elsestmt = nullptr;
+  if (match(TOKEN_TYPE::ELSE)) {
+    elsestmt = parseStatement();
+  }
+
+  return std::make_unique<IfStmt>(std::move(ifexpr), std::move(ifstmt),
+                                  std::move(elsestmt));
+}

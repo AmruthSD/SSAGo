@@ -12,6 +12,10 @@ std::unique_ptr<Statement> Parser::parseExpressionStatement() {
 enum Precedence {
   LOWEST = 0,
   ASSIGN,
+  OR,
+  AND,
+  EQUALITY,
+  COMPARISON,
   SUM,
   PRODUCT,
   CALL,
@@ -21,6 +25,20 @@ int getPrecedence(TOKEN_TYPE type) {
   switch (type) {
   case TOKEN_TYPE::ASSIGN:
     return Precedence::ASSIGN;
+
+  case TOKEN_TYPE::OR:
+    return Precedence::OR;
+
+  case TOKEN_TYPE::AND:
+    return Precedence::AND;
+
+  case TOKEN_TYPE::EQUAL:
+    return Precedence::EQUALITY;
+
+  case TOKEN_TYPE::GREATER:
+  case TOKEN_TYPE::LESS:
+    return Precedence::COMPARISON;
+
   case TOKEN_TYPE::PLUS:
   case TOKEN_TYPE::MINUS:
     return Precedence::SUM;
@@ -68,7 +86,8 @@ std::unique_ptr<Expr> Parser::parseExpression(int precedence) {
   }
 
   default:
-    throw std::runtime_error("Unexpected token in expression");
+    throw std::runtime_error("Unexpected token in expression " +
+                             currentToken.lexeme);
   }
 
   while (true) {

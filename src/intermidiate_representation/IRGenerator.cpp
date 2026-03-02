@@ -139,6 +139,7 @@ llvm::Value *IRGenerator::generateBinary(BinaryExpr *expr) {
   if (L->getType()->isDoubleTy()) {
 
     switch (expr->op) {
+
     case TOKEN_TYPE::PLUS:
       return builder.CreateFAdd(L, R, "faddtmp");
 
@@ -151,12 +152,26 @@ llvm::Value *IRGenerator::generateBinary(BinaryExpr *expr) {
     case TOKEN_TYPE::SLASH:
       return builder.CreateFDiv(L, R, "fdivtmp");
 
+    // ===== Comparisons (double) =====
+    case TOKEN_TYPE::EQUAL:
+      return builder.CreateFCmpOEQ(L, R, "cmptmp");
+
+    case TOKEN_TYPE::NOT_EQUAL:
+      return builder.CreateFCmpONE(L, R, "cmptmp");
+
+    case TOKEN_TYPE::LESS:
+      return builder.CreateFCmpOLT(L, R, "cmptmp");
+
+    case TOKEN_TYPE::GREATER:
+      return builder.CreateFCmpOGT(L, R, "cmptmp");
+
     default:
       return nullptr;
     }
   }
 
   switch (expr->op) {
+
   case TOKEN_TYPE::PLUS:
     return builder.CreateAdd(L, R, "addtmp");
 
@@ -168,6 +183,32 @@ llvm::Value *IRGenerator::generateBinary(BinaryExpr *expr) {
 
   case TOKEN_TYPE::SLASH:
     return builder.CreateSDiv(L, R, "divtmp");
+
+  // ===== Comparisons (int) =====
+  case TOKEN_TYPE::EQUAL:
+    return builder.CreateICmpEQ(L, R, "cmptmp");
+
+  case TOKEN_TYPE::NOT_EQUAL:
+    return builder.CreateICmpNE(L, R, "cmptmp");
+
+  case TOKEN_TYPE::LESS:
+    return builder.CreateICmpSLT(L, R, "cmptmp");
+
+  case TOKEN_TYPE::GREATER:
+    return builder.CreateICmpSGT(L, R, "cmptmp");
+
+  // ===== Logical ops =====
+  case TOKEN_TYPE::AND: {
+    L = builder.CreateICmpNE(L, llvm::ConstantInt::get(L->getType(), 0));
+    R = builder.CreateICmpNE(R, llvm::ConstantInt::get(R->getType(), 0));
+    return builder.CreateAnd(L, R, "andtmp");
+  }
+
+  case TOKEN_TYPE::OR: {
+    L = builder.CreateICmpNE(L, llvm::ConstantInt::get(L->getType(), 0));
+    R = builder.CreateICmpNE(R, llvm::ConstantInt::get(R->getType(), 0));
+    return builder.CreateOr(L, R, "ortmp");
+  }
 
   default:
     return nullptr;

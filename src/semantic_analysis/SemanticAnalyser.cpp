@@ -108,7 +108,9 @@ DATA_TYPE SemanticAnalyser::analyseBinaryExpr(BinaryExpr *expr) {
   case TOKEN_TYPE::EQUAL:
   case TOKEN_TYPE::NOT_EQUAL:
   case TOKEN_TYPE::LESS:
-  case TOKEN_TYPE::GREATER: {
+  case TOKEN_TYPE::GREATER:
+  case TOKEN_TYPE::OR:
+  case TOKEN_TYPE::AND: {
 
     if ((left_type != DATA_TYPE::DATATYPE_INT &&
          left_type != DATA_TYPE::DATATYPE_FLOAT) ||

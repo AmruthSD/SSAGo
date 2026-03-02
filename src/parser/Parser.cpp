@@ -40,6 +40,10 @@ std::unique_ptr<Statement> Parser::parseStatement() {
     return parseFunctionStatement();
   } else if (currentToken.type == TOKEN_TYPE::RETURN) {
     return parseReturnStatement();
+  } else if (currentToken.type == TOKEN_TYPE::IF) {
+    return parseIfElseStatement();
+  } else if (currentToken.type == TOKEN_TYPE::LCURLY) {
+    return parseBlockStatement();
   }
 
   return parseExpressionStatement();

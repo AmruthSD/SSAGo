@@ -131,6 +131,24 @@ Token Lexer::nextToken() {
   case '}':
     advance();
     return {"}", TOKEN_TYPE::RCURLY};
+
+  case '|': {
+    advance();
+    if (currentChar == '|') {
+      advance();
+      return {"||", TOKEN_TYPE::OR};
+    }
+    return {"|", TOKEN_TYPE::UNKNOWN};
+  }
+
+  case '&': {
+    advance();
+    if (currentChar == '&') {
+      advance();
+      return {"&&", TOKEN_TYPE::OR};
+    }
+    return {"&", TOKEN_TYPE::UNKNOWN};
+  }
   }
 
   if (currentChar == '"') {

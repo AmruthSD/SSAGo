@@ -34,6 +34,7 @@ public:
   void analyseFunctionStmt(FunctionStmt *stmt);
   void analyseBlock(BlockStmt *stmt);
   void analyseReturn(ReturnStmt *stmt);
+  void analyseIfElse(IfStmt *stmt);
   void analyseExpressionStmt(ExpressionStmt *stmt);
   DATA_TYPE analyseBinaryExpr(BinaryExpr *expr);
   DATA_TYPE analyseLiteralExpr(LiteralExpr *expr);

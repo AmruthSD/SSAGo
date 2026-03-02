@@ -149,3 +149,15 @@ public:
   void analyse(SemanticAnalyser &analyser) override;
   llvm::Value *codegen(IRGenerator &irGen) override;
 };
+
+class IfStmt : public Statement {
+public:
+  std::unique_ptr<Expr> condition;
+  std::unique_ptr<Statement> thenBranch;
+  std::unique_ptr<Statement> elseBranch;
+
+  IfStmt(std::unique_ptr<Expr> condition, std::unique_ptr<Statement> thenBranch,
+         std::unique_ptr<Statement> elseBranch);
+  void analyse(SemanticAnalyser &analyser) override;
+  llvm::Value *codegen(IRGenerator &irGen) override;
+};

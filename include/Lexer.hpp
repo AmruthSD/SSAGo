@@ -12,6 +12,8 @@ enum class TOKEN_TYPE {
   DATATYPE_VOID,
   FUNCTION,
   RETURN,
+  IF,
+  ELSE,
 
   // Literals
   INTEGER_LITERAL,
@@ -29,6 +31,8 @@ enum class TOKEN_TYPE {
   NOT_EQUAL, // !=
   LESS,      // <
   GREATER,   // >
+  OR,        // ||
+  AND,       // &&
 
   // Delimiters
   LPAREN,    // (
@@ -58,7 +62,9 @@ private:
       {"string", TOKEN_TYPE::DATATYPE_STRING},
       {"function", TOKEN_TYPE::FUNCTION},
       {"void", TOKEN_TYPE::DATATYPE_VOID},
-      {"return", TOKEN_TYPE::RETURN}};
+      {"return", TOKEN_TYPE::RETURN},
+      {"if", TOKEN_TYPE::IF},
+      {"else", TOKEN_TYPE::ELSE}};
 
   void advance();
   void skipWhitespace();
