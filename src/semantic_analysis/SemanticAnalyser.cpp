@@ -149,5 +149,5 @@ void SemanticAnalyser::analyseDeclarationStmt(DeclarationStmt *stmt) {
     }
   }
 
-  symbolTable[stmt->identifier] = {stmt->dataType, false, block_number};
+  symbolTable[stmt->identifier] = {stmt->dataType, block_number};
 }

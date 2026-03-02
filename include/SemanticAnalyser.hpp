@@ -8,8 +8,12 @@
 
 struct SymbolTableEntry {
   DATA_TYPE dataType;
-  bool function = false;
   int block_number = 0;
+};
+
+struct FunctionSymbolTableEntry {
+  DATA_TYPE returnType;
+  std::vector<DATA_TYPE> argumentsTypes;
 };
 
 class SemanticAnalyser {
@@ -17,6 +21,7 @@ private:
   Parser parser;
   int block_number = 0;
   std::unordered_map<std::string, SymbolTableEntry> symbolTable;
+  std::unordered_map<std::string, FunctionSymbolTableEntry> functionSymbolTable;
   DATA_TYPE current_function_type = DATA_TYPE::DATATYPE_INT;
 
 public:
@@ -32,4 +37,5 @@ public:
   DATA_TYPE analyseBinaryExpr(BinaryExpr *expr);
   DATA_TYPE analyseLiteralExpr(LiteralExpr *expr);
   DATA_TYPE analyseVariableExpr(VariableExpr *expr);
+  DATA_TYPE analyseFunctionCall(CallExpr *expr);
 };

@@ -1,9 +1,19 @@
 #include <Parser.hpp>
 
+std::unique_ptr<Statement> Parser::parseExpressionStatement() {
+  auto expr = parseExpression();
+
+  if (currentToken.type == TOKEN_TYPE ::SEMICOLON)
+    advance();
+
+  return std::make_unique<ExpressionStmt>(std::move(expr));
+}
+
 enum Precedence {
   LOWEST = 0,
   SUM,
   PRODUCT,
+  CALL,
 };
 
 int getPrecedence(TOKEN_TYPE type) {
@@ -16,18 +26,12 @@ int getPrecedence(TOKEN_TYPE type) {
   case TOKEN_TYPE::SLASH:
     return Precedence::PRODUCT;
 
+  case TOKEN_TYPE::LPAREN:
+    return Precedence::CALL;
+
   default:
     return Precedence::LOWEST;
   }
-}
-
-std::unique_ptr<Statement> Parser::parseExpressionStatement() {
-  auto expr = parseExpression();
-
-  if (currentToken.type == TOKEN_TYPE ::SEMICOLON)
-    advance();
-
-  return std::make_unique<ExpressionStmt>(std::move(expr));
 }
 
 std::unique_ptr<Expr> Parser::parseExpression(int precedence) {
@@ -64,15 +68,46 @@ std::unique_ptr<Expr> Parser::parseExpression(int precedence) {
     throw std::runtime_error("Unexpected token in expression");
   }
 
-  while (precedence < getPrecedence(currentToken.type)) {
+  while (true) {
+
+    if (currentToken.type == TOKEN_TYPE::LPAREN) {
+
+      int tokenPrecedence = getPrecedence(currentToken.type);
+      if (precedence >= tokenPrecedence)
+        break;
+
+      advance();
+
+      std::vector<std::unique_ptr<Expr>> args;
+
+      if (currentToken.type != TOKEN_TYPE::RPAREN) {
+        while (true) {
+          args.push_back(parseExpression(Precedence::LOWEST));
+
+          if (currentToken.type == TOKEN_TYPE::COMMA) {
+            advance();
+            continue;
+          }
+          break;
+        }
+      }
+
+      if (currentToken.type != TOKEN_TYPE::RPAREN)
+        throw std::runtime_error("Expected ')' in function call");
+
+      advance();
+
+      left = std::make_unique<CallExpr>(std::move(left), std::move(args));
+      continue;
+    }
+    int tokenPrecedence = getPrecedence(currentToken.type);
+    if (precedence >= tokenPrecedence)
+      break;
 
     TOKEN_TYPE op = currentToken.type;
-    int opPrecedence = getPrecedence(op);
-
     advance();
 
-    auto right = parseExpression(opPrecedence);
-
+    auto right = parseExpression(tokenPrecedence);
     left = std::make_unique<BinaryExpr>(op, std::move(left), std::move(right));
   }
 

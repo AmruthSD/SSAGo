@@ -93,6 +93,17 @@ public:
   llvm::Value *codegen(IRGenerator &irGen) override;
 };
 
+class CallExpr : public Expr {
+public:
+  std::unique_ptr<Expr> callee;
+  std::vector<std::unique_ptr<Expr>> arguments;
+
+  CallExpr(std::unique_ptr<Expr> callee,
+           std::vector<std::unique_ptr<Expr>> args);
+  DATA_TYPE analyse(SemanticAnalyser &analyser) override;
+  llvm::Value *codegen(IRGenerator &irGen) override;
+};
+
 class DeclarationStmt : public Statement {
 public:
   std::string identifier;

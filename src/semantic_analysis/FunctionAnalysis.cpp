@@ -4,7 +4,13 @@ void SemanticAnalyser::analyseFunctionStmt(FunctionStmt *func) {
   if (symbolTable.find(func->identifier) != symbolTable.end())
     throw std::runtime_error("function identifier is used " + func->identifier);
 
-  symbolTable[func->identifier] = {func->dataType, true};
+  std::vector<DATA_TYPE> argumentTypes;
+  for (auto [u, v] : func->arguments) {
+    argumentTypes.push_back(v);
+  }
+
+  functionSymbolTable[func->identifier] = {func->dataType, argumentTypes};
+
   current_function_type = func->dataType;
 
   for (auto param : func->arguments) {
@@ -41,4 +47,29 @@ void SemanticAnalyser::analyseReturn(ReturnStmt *stmt) {
     stmt->expr = std::make_unique<CastExpr>(std::move(stmt->expr),
                                             current_function_type);
   }
+}
+
+DATA_TYPE SemanticAnalyser::analyseFunctionCall(CallExpr *expr) {
+  auto *var = dynamic_cast<VariableExpr *>(expr->callee.get());
+  if (!var)
+    throw std::runtime_error("Invalid function call target");
+
+  std::string functionName = var->name;
+  auto it = functionSymbolTable.find(functionName);
+  if (it == functionSymbolTable.end())
+    throw std::runtime_error("Function not declared: " + functionName);
+
+  FunctionSymbolTableEntry &prop = it->second;
+  if (prop.argumentsTypes.size() != expr->arguments.size())
+    throw std::runtime_error("Number of arguments are not right in call for " +
+                             functionName);
+
+  for (int i = 0; i < prop.argumentsTypes.size(); i++) {
+    DATA_TYPE expr_type = expr->arguments[i]->analyse(*this);
+    if (expr_type != prop.argumentsTypes[i])
+      expr->arguments[i] = std::make_unique<CastExpr>(
+          std::move(expr->arguments[i]), prop.argumentsTypes[i]);
+  }
+
+  return prop.returnType;
 }

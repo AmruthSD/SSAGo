@@ -72,6 +72,18 @@ llvm::Value *VariableExpr::codegen(IRGenerator &irGen) {
   return irGen.generateVariable(this);
 }
 
+CallExpr::CallExpr(std::unique_ptr<Expr> callee,
+                   std::vector<std::unique_ptr<Expr>> args)
+    : callee(std::move(callee)), arguments(std::move(args)) {}
+
+DATA_TYPE CallExpr::analyse(SemanticAnalyser &analyser) {
+  return dataType = analyser.analyseFunctionCall(this);
+}
+
+llvm::Value *CallExpr::codegen(IRGenerator &irGen) {
+  return irGen.generateFunctionCall(this);
+}
+
 DeclarationStmt::DeclarationStmt(std::string identifier, DATA_TYPE dataType,
                                  std::unique_ptr<Expr> expr)
     : identifier(std::move(identifier)), dataType(dataType),

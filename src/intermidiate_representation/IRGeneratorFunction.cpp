@@ -131,3 +131,28 @@ llvm::Value *IRGenerator::generateReturn(ReturnStmt *stmt) {
 
   return builder.CreateRet(retValue);
 }
+llvm::Value *IRGenerator::generateFunctionCall(CallExpr *expr) {
+
+  auto *var = dynamic_cast<VariableExpr *>(expr->callee.get());
+  if (!var)
+    throw std::runtime_error("Invalid function call target in codegen");
+
+  std::string functionName = var->name;
+
+  llvm::Function *function = module->getFunction(functionName);
+  if (!function)
+    throw std::runtime_error("LLVM function not found: " + functionName);
+
+  std::vector<llvm::Value *> args;
+  args.reserve(expr->arguments.size());
+
+  for (auto &arg : expr->arguments) {
+    llvm::Value *argVal = arg->codegen(*this);
+    if (!argVal)
+      throw std::runtime_error("Failed to generate argument in call to " +
+                               functionName);
+    args.push_back(argVal);
+  }
+
+  return builder.CreateCall(function, args, functionName + "_call");
+}
