@@ -26,6 +26,7 @@ public:
   void optimizeModule();
 
   llvm::Value *generateProgram(Program *);
+  llvm::Value *getVariablePointer(std::string &name);
   llvm::Value *generateExpressionStmt(ExpressionStmt *);
   llvm::Value *generateFunction(FunctionStmt *);
   llvm::Value *generateBlock(BlockStmt *);

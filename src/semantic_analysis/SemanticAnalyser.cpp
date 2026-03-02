@@ -89,6 +89,13 @@ DATA_TYPE SemanticAnalyser::analyseBinaryExpr(BinaryExpr *expr) {
                                                DATA_TYPE::DATATYPE_FLOAT);
 
       return expr->dataType = DATA_TYPE::DATATYPE_FLOAT;
+    } else if (left_type == DATA_TYPE::DATATYPE_INT &&
+               right_type == DATA_TYPE::DATATYPE_FLOAT) {
+
+      expr->right = std::make_unique<CastExpr>(std::move(expr->right),
+                                               DATA_TYPE::DATATYPE_INT);
+
+      return expr->dataType = DATA_TYPE::DATATYPE_INT;
     }
 
     if (left_type != right_type) {

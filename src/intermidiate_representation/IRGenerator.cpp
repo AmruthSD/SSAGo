@@ -38,6 +38,16 @@ IRGenerator::IRGenerator(SemanticAnalyser &semanticAnalyser)
   }
 }
 
+llvm::Value *IRGenerator::getVariablePointer(std::string &name) {
+  for (auto it = namedValues.rbegin(); it != namedValues.rend(); ++it) {
+    auto found = it->find(name);
+    if (found != it->end())
+      return found->second;
+  }
+
+  return nullptr;
+}
+
 llvm::LLVMContext &IRGenerator::getContext() { return context; }
 
 llvm::Module *IRGenerator::getModule() { return module.get(); }
@@ -98,6 +108,24 @@ llvm::Value *IRGenerator::generateCast(CastExpr *expr) {
 }
 
 llvm::Value *IRGenerator::generateBinary(BinaryExpr *expr) {
+
+  if (expr->op == TOKEN_TYPE::ASSIGN) {
+
+    auto *var = dynamic_cast<VariableExpr *>(expr->left.get());
+    if (!var)
+      throw std::runtime_error("Left side of assignment must be a variable");
+
+    llvm::Value *ptr = getVariablePointer(var->name);
+    if (!ptr)
+      throw std::runtime_error("Unknown variable: " + var->name);
+
+    llvm::Value *value = expr->right->codegen(*this);
+    if (!value)
+      return nullptr;
+
+    builder.CreateStore(value, ptr);
+    return value;
+  }
 
   llvm::Value *L = expr->left->codegen(*this);
   llvm::Value *R = expr->right->codegen(*this);

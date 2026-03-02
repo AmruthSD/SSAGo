@@ -11,6 +11,7 @@ std::unique_ptr<Statement> Parser::parseExpressionStatement() {
 
 enum Precedence {
   LOWEST = 0,
+  ASSIGN,
   SUM,
   PRODUCT,
   CALL,
@@ -18,6 +19,8 @@ enum Precedence {
 
 int getPrecedence(TOKEN_TYPE type) {
   switch (type) {
+  case TOKEN_TYPE::ASSIGN:
+    return Precedence::ASSIGN;
   case TOKEN_TYPE::PLUS:
   case TOKEN_TYPE::MINUS:
     return Precedence::SUM;
@@ -40,13 +43,13 @@ std::unique_ptr<Expr> Parser::parseExpression(int precedence) {
 
   switch (currentToken.type) {
 
-  case TOKEN_TYPE ::IDENTIFIER: {
+  case TOKEN_TYPE::IDENTIFIER: {
     left = std::make_unique<VariableExpr>(currentToken.lexeme);
     advance();
     break;
   }
 
-  case TOKEN_TYPE ::INTEGER_LITERAL:
+  case TOKEN_TYPE::INTEGER_LITERAL:
   case TOKEN_TYPE::STRING_LITERAL:
   case TOKEN_TYPE::FLOAT_LITERAL: {
     left = std::make_unique<LiteralExpr>(
@@ -55,10 +58,10 @@ std::unique_ptr<Expr> Parser::parseExpression(int precedence) {
     break;
   }
 
-  case TOKEN_TYPE ::LPAREN: {
+  case TOKEN_TYPE::LPAREN: {
     advance();
     left = parseExpression(Precedence::LOWEST);
-    if (currentToken.type != TOKEN_TYPE ::RPAREN)
+    if (currentToken.type != TOKEN_TYPE::RPAREN)
       throw std::runtime_error("Expected ')'");
     advance();
     break;
@@ -107,7 +110,12 @@ std::unique_ptr<Expr> Parser::parseExpression(int precedence) {
     TOKEN_TYPE op = currentToken.type;
     advance();
 
-    auto right = parseExpression(tokenPrecedence);
+    int nextPrecedence = tokenPrecedence;
+    if (op == TOKEN_TYPE::ASSIGN)
+      nextPrecedence = tokenPrecedence - 1;
+
+    auto right = parseExpression(nextPrecedence);
+
     left = std::make_unique<BinaryExpr>(op, std::move(left), std::move(right));
   }
 
