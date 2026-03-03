@@ -86,3 +86,18 @@ void WhileStmt::analyse(SemanticAnalyser &analyser) {
 llvm::Value *WhileStmt::codegen(IRGenerator &irGen) {
   return irGen.generateWhile(this);
 }
+
+void BreakStmt::analyse(SemanticAnalyser &analyser) {
+  analyser.analyseBreak(this);
+}
+
+llvm::Value *BreakStmt::codegen(IRGenerator &irGen) {
+  return irGen.generateBreak(this);
+}
+void ContinueStmt::analyse(SemanticAnalyser &analyser) {
+  analyser.analyseContinue(this);
+}
+
+llvm::Value *ContinueStmt::codegen(IRGenerator &irGen) {
+  return irGen.generateContinue(this);
+}

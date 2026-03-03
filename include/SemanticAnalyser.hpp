@@ -21,6 +21,7 @@ class SemanticAnalyser {
 private:
   Parser parser;
   int block_number = 0;
+  int loop_number = 0;
   std::unordered_map<std::string, SymbolTableEntry> symbolTable;
   std::unordered_map<std::string, FunctionSymbolTableEntry> functionSymbolTable;
   DATA_TYPE current_function_type = DATA_TYPE::DATATYPE_INT;
@@ -37,6 +38,8 @@ public:
   void analyseIfElse(IfStmt *stmt);
   void analyseExpressionStmt(ExpressionStmt *stmt);
   void analyseWhile(WhileStmt *stmt);
+  void analyseBreak(BreakStmt *stmt);
+  void analyseContinue(ContinueStmt *stmt);
   DATA_TYPE analyseBinaryExpr(BinaryExpr *expr);
   DATA_TYPE analyseLiteralExpr(LiteralExpr *expr);
   DATA_TYPE analyseVariableExpr(VariableExpr *expr);

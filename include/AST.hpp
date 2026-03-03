@@ -172,3 +172,17 @@ public:
   void analyse(SemanticAnalyser &analyser) override;
   llvm::Value *codegen(IRGenerator &irGen) override;
 };
+
+class BreakStmt : public Statement {
+public:
+  BreakStmt() {}
+  void analyse(SemanticAnalyser &analyser) override;
+  llvm::Value *codegen(IRGenerator &irGen) override;
+};
+
+class ContinueStmt : public Statement {
+public:
+  ContinueStmt() {}
+  void analyse(SemanticAnalyser &analyser) override;
+  llvm::Value *codegen(IRGenerator &irGen) override;
+};

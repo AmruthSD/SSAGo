@@ -47,7 +47,9 @@ std::unique_ptr<Statement> Parser::parseStatement() {
   } else if (currentToken.type == TOKEN_TYPE::WHILE) {
     return parseWhileStatement();
   } else if (currentToken.type == TOKEN_TYPE::BREAK) {
+    return parseBreakStatement();
   } else if (currentToken.type == TOKEN_TYPE::CONTINUE) {
+    return parseContinueStatement();
   }
 
   return parseExpressionStatement();

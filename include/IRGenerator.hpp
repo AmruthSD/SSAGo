@@ -13,6 +13,8 @@ private:
   llvm::LLVMContext context;
   std::unique_ptr<llvm::Module> module;
   llvm::IRBuilder<> builder;
+  std::vector<llvm::BasicBlock *> breakTargets;
+  std::vector<llvm::BasicBlock *> continueTargets;
 
   std::vector<std::unordered_map<std::string, llvm::Value *>> namedValues;
 
@@ -40,6 +42,8 @@ public:
   llvm::Value *generateReturn(ReturnStmt *);
   llvm::Value *generateIfElse(IfStmt *);
   llvm::Value *generateWhile(WhileStmt *);
+  llvm::Value *generateBreak(BreakStmt *);
+  llvm::Value *generateContinue(ContinueStmt *);
   llvm::Value *generateFunctionCall(CallExpr *);
   llvm::Function *declareExternalFunction(const std::string &name,
                                           llvm::Type *returnType,

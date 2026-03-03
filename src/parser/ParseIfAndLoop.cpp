@@ -26,3 +26,15 @@ std::unique_ptr<Statement> Parser::parseWhileStatement() {
   return std::make_unique<WhileStmt>(std::move(conditionexpr),
                                      std::move(thenblock));
 }
+
+std::unique_ptr<Statement> Parser::parseBreakStatement() {
+  expect(TOKEN_TYPE::BREAK, "Expected break");
+  expect(TOKEN_TYPE::SEMICOLON, "Semicolon after break");
+  return std::make_unique<BreakStmt>();
+}
+
+std::unique_ptr<Statement> Parser::parseContinueStatement() {
+  expect(TOKEN_TYPE::CONTINUE, "Expected break");
+  expect(TOKEN_TYPE::SEMICOLON, "Semicolon after break");
+  return std::make_unique<ContinueStmt>();
+}

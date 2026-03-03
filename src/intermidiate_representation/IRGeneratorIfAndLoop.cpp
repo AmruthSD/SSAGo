@@ -72,11 +72,37 @@ llvm::Value *IRGenerator::generateWhile(WhileStmt *stmt) {
 
   function->getBasicBlockList().push_back(bodyBB);
   builder.SetInsertPoint(bodyBB);
+  breakTargets.push_back(afterBB);
+  continueTargets.push_back(condBB);
   stmt->thenBranch->codegen(*this);
   builder.CreateBr(condBB);
 
+  breakTargets.pop_back();
+  continueTargets.pop_back();
+
   function->getBasicBlockList().push_back(afterBB);
   builder.SetInsertPoint(afterBB);
+
+  return nullptr;
+}
+
+llvm::Value *IRGenerator::generateBreak(BreakStmt *stmt) {
+
+  builder.CreateBr(breakTargets.back());
+  llvm::BasicBlock *unreachable = llvm::BasicBlock::Create(
+      context, "after.break", builder.GetInsertBlock()->getParent());
+
+  builder.SetInsertPoint(unreachable);
+  return nullptr;
+}
+
+llvm::Value *IRGenerator::generateContinue(ContinueStmt *stmt) {
+
+  builder.CreateBr(continueTargets.back());
+  llvm::BasicBlock *unreachable = llvm::BasicBlock::Create(
+      context, "after.continue", builder.GetInsertBlock()->getParent());
+
+  builder.SetInsertPoint(unreachable);
 
   return nullptr;
 }
