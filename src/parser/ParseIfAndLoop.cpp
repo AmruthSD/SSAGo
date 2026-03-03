@@ -15,3 +15,14 @@ std::unique_ptr<Statement> Parser::parseIfElseStatement() {
   return std::make_unique<IfStmt>(std::move(ifexpr), std::move(ifstmt),
                                   std::move(elsestmt));
 }
+
+std::unique_ptr<Statement> Parser::parseWhileStatement() {
+  advance();
+  expect(TOKEN_TYPE::LPAREN, "start of condition");
+  std::unique_ptr<Expr> conditionexpr = parseExpression();
+  expect(TOKEN_TYPE::RPAREN, "end of condition");
+  std::unique_ptr<Statement> thenblock = parseStatement();
+
+  return std::make_unique<WhileStmt>(std::move(conditionexpr),
+                                     std::move(thenblock));
+}

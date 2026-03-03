@@ -42,6 +42,7 @@ private:
   std::unique_ptr<Statement> parseDeclarationStatement();
   std::unique_ptr<Statement> parseReturnStatement();
   std::unique_ptr<Statement> parseIfElseStatement();
+  std::unique_ptr<Statement> parseWhileStatement();
 
 public:
   Parser(Lexer &lexer);

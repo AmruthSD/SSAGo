@@ -74,3 +74,15 @@ void IfStmt::analyse(SemanticAnalyser &analyser) {
 llvm::Value *IfStmt::codegen(IRGenerator &irGen) {
   return irGen.generateIfElse(this);
 }
+
+WhileStmt::WhileStmt(std::unique_ptr<Expr> condition,
+                     std::unique_ptr<Statement> thenBranch)
+    : condition(std::move(condition)), thenBranch(std::move(thenBranch)) {}
+
+void WhileStmt::analyse(SemanticAnalyser &analyser) {
+  analyser.analyseWhile(this);
+}
+
+llvm::Value *WhileStmt::codegen(IRGenerator &irGen) {
+  return irGen.generateWhile(this);
+}

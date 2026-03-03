@@ -39,6 +39,7 @@ public:
   llvm::Value *generateDeclaration(DeclarationStmt *);
   llvm::Value *generateReturn(ReturnStmt *);
   llvm::Value *generateIfElse(IfStmt *);
+  llvm::Value *generateWhile(WhileStmt *);
   llvm::Value *generateFunctionCall(CallExpr *);
   llvm::Function *declareExternalFunction(const std::string &name,
                                           llvm::Type *returnType,

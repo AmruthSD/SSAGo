@@ -161,3 +161,14 @@ public:
   void analyse(SemanticAnalyser &analyser) override;
   llvm::Value *codegen(IRGenerator &irGen) override;
 };
+
+class WhileStmt : public Statement {
+public:
+  std::unique_ptr<Expr> condition;
+  std::unique_ptr<Statement> thenBranch;
+
+  WhileStmt(std::unique_ptr<Expr> condition,
+            std::unique_ptr<Statement> thenBranch);
+  void analyse(SemanticAnalyser &analyser) override;
+  llvm::Value *codegen(IRGenerator &irGen) override;
+};

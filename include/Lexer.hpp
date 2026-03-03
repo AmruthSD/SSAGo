@@ -14,6 +14,9 @@ enum class TOKEN_TYPE {
   RETURN,
   IF,
   ELSE,
+  WHILE,
+  BREAK,
+  CONTINUE,
 
   // Literals
   INTEGER_LITERAL,
@@ -64,7 +67,10 @@ private:
       {"void", TOKEN_TYPE::DATATYPE_VOID},
       {"return", TOKEN_TYPE::RETURN},
       {"if", TOKEN_TYPE::IF},
-      {"else", TOKEN_TYPE::ELSE}};
+      {"else", TOKEN_TYPE::ELSE},
+      {"while", TOKEN_TYPE::WHILE},
+      {"continue", TOKEN_TYPE::CONTINUE},
+      {"break", TOKEN_TYPE::BREAK}};
 
   void advance();
   void skipWhitespace();

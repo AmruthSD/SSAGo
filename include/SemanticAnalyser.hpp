@@ -36,6 +36,7 @@ public:
   void analyseReturn(ReturnStmt *stmt);
   void analyseIfElse(IfStmt *stmt);
   void analyseExpressionStmt(ExpressionStmt *stmt);
+  void analyseWhile(WhileStmt *stmt);
   DATA_TYPE analyseBinaryExpr(BinaryExpr *expr);
   DATA_TYPE analyseLiteralExpr(LiteralExpr *expr);
   DATA_TYPE analyseVariableExpr(VariableExpr *expr);

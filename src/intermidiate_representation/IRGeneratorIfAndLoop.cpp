@@ -41,3 +41,42 @@ llvm::Value *IRGenerator::generateIfElse(IfStmt *stmt) {
 
   return nullptr;
 }
+
+llvm::Value *IRGenerator::generateWhile(WhileStmt *stmt) {
+
+  llvm::Function *function = builder.GetInsertBlock()->getParent();
+
+  llvm::BasicBlock *condBB =
+      llvm::BasicBlock::Create(context, "while.cond", function);
+  llvm::BasicBlock *bodyBB = llvm::BasicBlock::Create(context, "while.body");
+  llvm::BasicBlock *afterBB = llvm::BasicBlock::Create(context, "while.after");
+
+  builder.CreateBr(condBB);
+  builder.SetInsertPoint(condBB);
+  llvm::Value *condValue = stmt->condition->codegen(*this);
+
+  if (!condValue)
+    throw std::runtime_error("Invalid condition in if");
+
+  if (condValue->getType()->isIntegerTy()) {
+    condValue = builder.CreateICmpNE(
+        condValue, llvm::ConstantInt::get(condValue->getType(), 0), "ifcond");
+  } else if (condValue->getType()->isFloatingPointTy()) {
+    condValue = builder.CreateFCmpONE(
+        condValue, llvm::ConstantFP::get(condValue->getType(), 0.0), "ifcond");
+  } else if (!condValue->getType()->isIntegerTy(1)) {
+    throw std::runtime_error("Unsupported condition type in if");
+  }
+
+  builder.CreateCondBr(condValue, bodyBB, afterBB);
+
+  function->getBasicBlockList().push_back(bodyBB);
+  builder.SetInsertPoint(bodyBB);
+  stmt->thenBranch->codegen(*this);
+  builder.CreateBr(condBB);
+
+  function->getBasicBlockList().push_back(afterBB);
+  builder.SetInsertPoint(afterBB);
+
+  return nullptr;
+}
