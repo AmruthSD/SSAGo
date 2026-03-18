@@ -71,7 +71,8 @@ std::unique_ptr<Expr> Parser::parseExpression(int precedence) {
   case TOKEN_TYPE::STRING_LITERAL:
   case TOKEN_TYPE::FLOAT_LITERAL: {
     left = std::make_unique<LiteralExpr>(
-        currentToken.lexeme, dataTypeFromToken.at(currentToken.type));
+        currentToken.lexeme,
+        new Type{dataTypeFromToken.at(currentToken.type), nullptr});
     advance();
     break;
   }
@@ -82,6 +83,17 @@ std::unique_ptr<Expr> Parser::parseExpression(int precedence) {
     if (currentToken.type != TOKEN_TYPE::RPAREN)
       throw std::runtime_error("Expected ')'");
     advance();
+    break;
+  }
+
+  case TOKEN_TYPE::ASTERISK:
+  case TOKEN_TYPE::AMPERSAND: {
+    TOKEN_TYPE op = currentToken.type;
+    advance();
+
+    auto operand = parseExpression(Precedence::PRODUCT);
+
+    left = std::make_unique<UnaryExpr>(op, std::move(operand));
     break;
   }
 

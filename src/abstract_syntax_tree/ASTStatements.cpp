@@ -13,9 +13,9 @@ llvm::Value *ExpressionStmt::codegen(IRGenerator &irGen) {
   return irGen.generateExpressionStmt(this);
 }
 
-DeclarationStmt::DeclarationStmt(std::string identifier, DATA_TYPE dataType,
+DeclarationStmt::DeclarationStmt(std::string identifier, Type *dataType,
                                  std::unique_ptr<Expr> expr)
-    : identifier(std::move(identifier)), dataType(dataType),
+    : identifier(std::move(identifier)), dataType(std::move(dataType)),
       expr(std::move(expr)) {}
 
 void DeclarationStmt::analyse(SemanticAnalyser &analyser) {
@@ -26,9 +26,9 @@ llvm::Value *DeclarationStmt::codegen(IRGenerator &irGen) {
   return irGen.generateDeclaration(this);
 }
 
-FunctionStmt::FunctionStmt(std::string identifier, DATA_TYPE dataType,
+FunctionStmt::FunctionStmt(std::string identifier, Type *dataType,
                            std::unique_ptr<BlockStmt> body,
-                           std::vector<std::pair<std::string, DATA_TYPE>> args)
+                           std::vector<std::pair<std::string, Type *>> args)
     : identifier(identifier), body(std::move(body)), arguments(std::move(args)),
       dataType(dataType) {}
 

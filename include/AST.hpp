@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Lexer.hpp>
+#include <Type.hpp>
 #include <llvm/IR/Value.h>
 #include <memory>
 #include <string>
@@ -8,7 +9,6 @@
 
 class SemanticAnalyser;
 class IRGenerator;
-enum class DATA_TYPE : int;
 
 class ASTNode {
 public:
@@ -47,10 +47,15 @@ public:
 
 class Expr : public ASTNode {
 public:
-  DATA_TYPE dataType;
+  Type *dataType;
   virtual ~Expr() = default;
-  virtual DATA_TYPE analyse(SemanticAnalyser &analyser) = 0;
+  virtual Type *analyse(SemanticAnalyser &analyser) = 0;
   virtual llvm::Value *codegen(IRGenerator &irGen) = 0;
+  virtual llvm::Value *codegenLValue(IRGenerator &irGen) {
+    throw std::runtime_error("LValue codegen not allowed");
+  };
+
+  virtual bool isLValue() { return false; }
 };
 
 class BinaryExpr : public Expr {
@@ -62,7 +67,7 @@ public:
   BinaryExpr(TOKEN_TYPE oper, std::unique_ptr<Expr> lhs,
              std::unique_ptr<Expr> rhs);
 
-  DATA_TYPE analyse(SemanticAnalyser &analyser) override;
+  Type *analyse(SemanticAnalyser &analyser) override;
   llvm::Value *codegen(IRGenerator &irGen) override;
 };
 
@@ -70,8 +75,8 @@ class LiteralExpr : public Expr {
 public:
   std::string value;
 
-  explicit LiteralExpr(const std::string &val, DATA_TYPE dataType);
-  DATA_TYPE analyse(SemanticAnalyser &analyser) override;
+  explicit LiteralExpr(const std::string &val, Type *dataType);
+  Type *analyse(SemanticAnalyser &analyser) override;
   llvm::Value *codegen(IRGenerator &irGen) override;
 };
 
@@ -79,8 +84,8 @@ class CastExpr : public Expr {
 public:
   std::unique_ptr<Expr> expr = nullptr;
 
-  explicit CastExpr(std::unique_ptr<Expr> expr, DATA_TYPE dataType);
-  DATA_TYPE analyse(SemanticAnalyser &analyser) override;
+  explicit CastExpr(std::unique_ptr<Expr> expr, Type *dataType);
+  Type *analyse(SemanticAnalyser &analyser) override;
   llvm::Value *codegen(IRGenerator &irGen) override;
 };
 
@@ -89,8 +94,10 @@ public:
   std::string name;
 
   explicit VariableExpr(const std::string &n);
-  DATA_TYPE analyse(SemanticAnalyser &analyser) override;
+  Type *analyse(SemanticAnalyser &analyser) override;
   llvm::Value *codegen(IRGenerator &irGen) override;
+  llvm::Value *codegenLValue(IRGenerator &irGen) override;
+  bool isLValue() override;
 };
 
 class CallExpr : public Expr {
@@ -100,17 +107,29 @@ public:
 
   CallExpr(std::unique_ptr<Expr> callee,
            std::vector<std::unique_ptr<Expr>> args);
-  DATA_TYPE analyse(SemanticAnalyser &analyser) override;
+  Type *analyse(SemanticAnalyser &analyser) override;
   llvm::Value *codegen(IRGenerator &irGen) override;
+};
+
+class UnaryExpr : public Expr {
+public:
+  TOKEN_TYPE op;
+  std::unique_ptr<Expr> operand;
+
+  UnaryExpr(TOKEN_TYPE op, std::unique_ptr<Expr> operand);
+  Type *analyse(SemanticAnalyser &analyser) override;
+  llvm::Value *codegen(IRGenerator &irGen) override;
+  llvm::Value *codegenLValue(IRGenerator &irGen) override;
+  bool isLValue() override;
 };
 
 class DeclarationStmt : public Statement {
 public:
   std::string identifier;
-  DATA_TYPE dataType;
+  Type *dataType;
   std::unique_ptr<Expr> expr = nullptr;
 
-  DeclarationStmt(std::string identifier, DATA_TYPE dataType,
+  DeclarationStmt(std::string identifier, Type *dataType,
                   std::unique_ptr<Expr> expr);
 
   void analyse(SemanticAnalyser &analyser) override;
@@ -130,12 +149,12 @@ public:
 class FunctionStmt : public Statement {
 public:
   std::string identifier;
-  DATA_TYPE dataType;
-  std::vector<std::pair<std::string, DATA_TYPE>> arguments;
+  Type *dataType;
+  std::vector<std::pair<std::string, Type *>> arguments;
   std::unique_ptr<BlockStmt> body;
-  FunctionStmt(std::string identifier, DATA_TYPE dataType,
+  FunctionStmt(std::string identifier, Type *dataType,
                std::unique_ptr<BlockStmt> body,
-               std::vector<std::pair<std::string, DATA_TYPE>> args);
+               std::vector<std::pair<std::string, Type *>> args);
 
   void analyse(SemanticAnalyser &analyser) override;
   llvm::Value *codegen(IRGenerator &irGen) override;

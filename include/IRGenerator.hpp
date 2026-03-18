@@ -38,6 +38,7 @@ public:
   llvm::Value *generateLiteral(LiteralExpr *);
   llvm::Value *generateCast(CastExpr *);
   llvm::Value *generateVariable(VariableExpr *);
+  llvm::Value *generateVariableLValue(VariableExpr *);
   llvm::Value *generateDeclaration(DeclarationStmt *);
   llvm::Value *generateReturn(ReturnStmt *);
   llvm::Value *generateIfElse(IfStmt *);
@@ -45,11 +46,13 @@ public:
   llvm::Value *generateBreak(BreakStmt *);
   llvm::Value *generateContinue(ContinueStmt *);
   llvm::Value *generateFunctionCall(CallExpr *);
+  llvm::Value *generateUnaryExpr(UnaryExpr *);
+  llvm::Value *generateUnaryExprLValue(UnaryExpr *);
   llvm::Function *declareExternalFunction(const std::string &name,
                                           llvm::Type *returnType,
                                           std::vector<llvm::Type *> paramTypes,
                                           bool isVarArg);
   llvm::Function *getOrDeclarePrintf();
   llvm::Function *getOrDeclareScanf();
-  llvm::Type *getLLVMType(DATA_TYPE type, llvm::LLVMContext &context);
+  llvm::Type *getLLVMType(Type *type, llvm::LLVMContext &context);
 };

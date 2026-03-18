@@ -1,7 +1,7 @@
 #include <SemanticAnalyser.hpp>
 
 void SemanticAnalyser::analyseIfElse(IfStmt *stmt) {
-  DATA_TYPE type = stmt->condition->analyse(*this);
+  Type *type = stmt->condition->analyse(*this);
 
   stmt->thenBranch->analyse(*this);
   stmt->elseBranch->analyse(*this);
@@ -9,7 +9,7 @@ void SemanticAnalyser::analyseIfElse(IfStmt *stmt) {
 
 void SemanticAnalyser::analyseWhile(WhileStmt *stmt) {
   loop_number++;
-  DATA_TYPE type = stmt->condition->analyse(*this);
+  Type *type = stmt->condition->analyse(*this);
 
   stmt->thenBranch->analyse(*this);
   loop_number--;

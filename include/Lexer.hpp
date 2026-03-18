@@ -24,11 +24,12 @@ enum class TOKEN_TYPE {
   STRING_LITERAL,
 
   // Operators
-  PLUS,     // +
-  MINUS,    // -
-  ASTERISK, // *
-  SLASH,    // /
-  ASSIGN,   // =
+  PLUS,      // +
+  MINUS,     // -
+  ASTERISK,  // *
+  AMPERSAND, // &
+  SLASH,     // /
+  ASSIGN,    // =
 
   EQUAL,     // ==
   NOT_EQUAL, // !=

@@ -6,9 +6,8 @@
 #include <iostream>
 #include <llvm/IR/Verifier.h>
 
-llvm::Type *IRGenerator::getLLVMType(DATA_TYPE type,
-                                     llvm::LLVMContext &context) {
-  switch (type) {
+llvm::Type *IRGenerator::getLLVMType(Type *type, llvm::LLVMContext &context) {
+  switch (type->base) {
   case DATA_TYPE::DATATYPE_INT:
     return llvm::Type::getInt32Ty(context);
 
@@ -17,6 +16,11 @@ llvm::Type *IRGenerator::getLLVMType(DATA_TYPE type,
 
   case DATA_TYPE::DATATYPE_VOID:
     return llvm::Type::getVoidTy(context);
+
+  case DATA_TYPE::DATATYPE_POINTER: {
+    llvm::Type *elemType = getLLVMType(type->pointee, context);
+    return llvm::PointerType::getUnqual(elemType);
+  }
 
   default:
     throw std::runtime_error("Unknown DATA_TYPE");
@@ -71,14 +75,14 @@ llvm::Value *IRGenerator::generateExpressionStmt(ExpressionStmt *stmt) {
 }
 
 llvm::Value *IRGenerator::generateLiteral(LiteralExpr *expr) {
-  DATA_TYPE dataType = expr->dataType;
+  DATA_TYPE dataType = expr->dataType->base;
   switch (dataType) {
   case DATA_TYPE::DATATYPE_INT:
-    return llvm::ConstantInt::get(getLLVMType(dataType, context),
+    return llvm::ConstantInt::get(getLLVMType(expr->dataType, context),
                                   std::stoi(expr->value), true);
 
   case DATA_TYPE::DATATYPE_FLOAT:
-    return llvm::ConstantFP::get(getLLVMType(dataType, context),
+    return llvm::ConstantFP::get(getLLVMType(expr->dataType, context),
                                  std::stof(expr->value));
 
   case DATA_TYPE::DATATYPE_STRING:
@@ -114,19 +118,22 @@ llvm::Value *IRGenerator::generateBinary(BinaryExpr *expr) {
 
   if (expr->op == TOKEN_TYPE::ASSIGN) {
 
-    auto *var = dynamic_cast<VariableExpr *>(expr->left.get());
-    if (!var)
-      throw std::runtime_error("Left side of assignment must be a variable");
+    if (!expr->left->isLValue())
+      throw std::runtime_error("Left side of assignment is not assignable");
 
-    llvm::Value *ptr = getVariablePointer(var->name);
-    if (!ptr)
-      throw std::runtime_error("Unknown variable: " + var->name);
-
+    llvm::Value *ptr = expr->left->codegenLValue(*this);
     llvm::Value *value = expr->right->codegen(*this);
     if (!value)
       return nullptr;
 
+    llvm::Type *ptrElemTy = ptr->getType()->getPointerElementType();
+    if (value->getType() != ptrElemTy) {
+      llvm::errs() << "Type mismatch in assignment IR\n";
+      return nullptr;
+    }
+
     builder.CreateStore(value, ptr);
+
     return value;
   }
 
@@ -215,7 +222,60 @@ llvm::Value *IRGenerator::generateBinary(BinaryExpr *expr) {
   }
 }
 
+llvm::Value *IRGenerator::generateUnaryExpr(UnaryExpr *expr) {
+  switch (expr->op) {
+
+  case TOKEN_TYPE::ASTERISK: {
+    llvm::Value *ptr = generateUnaryExprLValue(expr);
+    if (!ptr)
+      return nullptr;
+
+    llvm::Type *elementType = ptr->getType()->getPointerElementType();
+
+    return builder.CreateLoad(elementType, ptr, "deref_val");
+  }
+  case TOKEN_TYPE::AMPERSAND: {
+    return expr->operand->codegenLValue(*this);
+  }
+
+  default:
+    llvm::errs() << "Unsupported unary operator\n";
+    return nullptr;
+  }
+}
+
+llvm::Value *IRGenerator::generateUnaryExprLValue(UnaryExpr *expr) {
+  switch (expr->op) {
+
+  case TOKEN_TYPE::ASTERISK: {
+    llvm::Value *ptr = expr->operand->codegen(*this);
+    if (!ptr)
+      return nullptr;
+
+    if (!ptr->getType()->isPointerTy()) {
+      llvm::errs() << "Cannot dereference non-pointer\n";
+      return nullptr;
+    }
+
+    return ptr;
+  }
+
+  default:
+    llvm::errs() << "Unsupported unary operator for lvalue\n";
+    return nullptr;
+  }
+}
+
 llvm::Value *IRGenerator::generateVariable(VariableExpr *expr) {
+  llvm::Value *ptr = generateVariableLValue(expr);
+  if (!ptr)
+    return nullptr;
+
+  llvm::Type *elementType = ptr->getType()->getPointerElementType();
+  return builder.CreateLoad(elementType, ptr, expr->name + "_val");
+}
+
+llvm::Value *IRGenerator::generateVariableLValue(VariableExpr *expr) {
   llvm::Value *ptr = nullptr;
 
   for (auto it = namedValues.rbegin(); it != namedValues.rend(); ++it) {
@@ -229,12 +289,6 @@ llvm::Value *IRGenerator::generateVariable(VariableExpr *expr) {
   if (!ptr) {
     llvm::errs() << "Unknown variable: " << expr->name << "\n";
     return nullptr;
-  }
-
-  if (ptr->getType()->isPointerTy()) {
-    llvm::Type *elementType = ptr->getType()->getPointerElementType();
-
-    return builder.CreateLoad(elementType, ptr, expr->name + "_val");
   }
 
   return ptr;
@@ -267,16 +321,27 @@ llvm::Value *IRGenerator::generateDeclaration(DeclarationStmt *stmt) {
     namedValues.back()[stmt->identifier] = global;
     return global;
   } else {
-    llvm::Value *initValue = nullptr;
+    llvm::Type *varType = getLLVMType(stmt->dataType, context);
 
-    llvm::AllocaInst *alloca = builder.CreateAlloca(
-        getLLVMType(stmt->dataType, context), nullptr, stmt->identifier);
+    llvm::AllocaInst *alloca =
+        builder.CreateAlloca(varType, nullptr, stmt->identifier);
+
+    llvm::Value *initValue = nullptr;
 
     if (stmt->expr != nullptr) {
       initValue = stmt->expr->codegen(*this);
     } else {
-      initValue =
-          llvm::ConstantInt::get(getLLVMType(stmt->dataType, context), 0);
+      if (varType->isPointerTy()) {
+        initValue = llvm::ConstantPointerNull::get(
+            llvm::cast<llvm::PointerType>(varType));
+      } else if (varType->isIntegerTy()) {
+        initValue = llvm::ConstantInt::get(varType, 0);
+      } else if (varType->isDoubleTy()) {
+        initValue = llvm::ConstantFP::get(varType, 0.0);
+      } else {
+        llvm::errs() << "Unsupported type for default initialization\n";
+        return nullptr;
+      }
     }
 
     builder.CreateStore(initValue, alloca);

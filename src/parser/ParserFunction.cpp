@@ -10,7 +10,7 @@ std::unique_ptr<Statement> Parser::parseFunctionStatement() {
 
   expect(TOKEN_TYPE::LPAREN, "Expected '(' after function name");
 
-  std::vector<std::pair<std::string, DATA_TYPE>> params;
+  std::vector<std::pair<std::string, Type *>> params;
   while (currentToken.type != TOKEN_TYPE::RPAREN) {
 
     std::string paramName = currentToken.lexeme;
@@ -19,10 +19,10 @@ std::unique_ptr<Statement> Parser::parseFunctionStatement() {
     TOKEN_TYPE tokenType = currentToken.type;
     if (dataTypeFromToken.find(tokenType) == dataTypeFromToken.end())
       throw std::runtime_error("Data Type of Parameter not present");
-    DATA_TYPE paramType = dataTypeFromToken.at(tokenType);
-    advance();
 
-    params.push_back({paramName, paramType});
+    Type *type = parseType();
+
+    params.push_back({paramName, type});
 
     if (currentToken.type == TOKEN_TYPE::COMMA) {
       advance();
@@ -34,8 +34,7 @@ std::unique_ptr<Statement> Parser::parseFunctionStatement() {
   TOKEN_TYPE tokenType = currentToken.type;
   if (dataTypeFromToken.find(tokenType) == dataTypeFromToken.end())
     throw std::runtime_error("Data Type of Parameter not present");
-  DATA_TYPE returnType = dataTypeFromToken.at(tokenType);
-  advance();
+  Type *returnType = parseType();
 
   std::unique_ptr<BlockStmt> body = parseBlockStatement();
 

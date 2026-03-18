@@ -8,13 +8,13 @@
 #include <unordered_map>
 
 struct SymbolTableEntry {
-  DATA_TYPE dataType;
+  Type *dataType;
   int block_number = 0;
 };
 
 struct FunctionSymbolTableEntry {
-  DATA_TYPE returnType;
-  std::vector<DATA_TYPE> argumentsTypes;
+  Type *returnType;
+  std::vector<Type *> argumentsTypes;
 };
 
 class SemanticAnalyser {
@@ -24,7 +24,7 @@ private:
   int loop_number = 0;
   std::unordered_map<std::string, SymbolTableEntry> symbolTable;
   std::unordered_map<std::string, FunctionSymbolTableEntry> functionSymbolTable;
-  DATA_TYPE current_function_type = DATA_TYPE::DATATYPE_INT;
+  Type *current_function_type = new Type{DATA_TYPE::DATATYPE_INT, nullptr};
 
 public:
   std::unique_ptr<Program> ast;
@@ -40,8 +40,9 @@ public:
   void analyseWhile(WhileStmt *stmt);
   void analyseBreak(BreakStmt *stmt);
   void analyseContinue(ContinueStmt *stmt);
-  DATA_TYPE analyseBinaryExpr(BinaryExpr *expr);
-  DATA_TYPE analyseLiteralExpr(LiteralExpr *expr);
-  DATA_TYPE analyseVariableExpr(VariableExpr *expr);
-  DATA_TYPE analyseFunctionCall(CallExpr *expr);
+  Type *analyseBinaryExpr(BinaryExpr *expr);
+  Type *analyseLiteralExpr(LiteralExpr *expr);
+  Type *analyseVariableExpr(VariableExpr *expr);
+  Type *analyseUnaryExpr(UnaryExpr *expr);
+  Type *analyseFunctionCall(CallExpr *expr);
 };

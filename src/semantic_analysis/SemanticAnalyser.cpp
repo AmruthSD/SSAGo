@@ -20,21 +20,21 @@ void SemanticAnalyser::analyseExpressionStmt(ExpressionStmt *stmt) {
   stmt->expression.get()->analyse(*this);
 }
 
-DATA_TYPE SemanticAnalyser::analyseLiteralExpr(LiteralExpr *expr) {
+Type *SemanticAnalyser::analyseLiteralExpr(LiteralExpr *expr) {
   return expr->dataType;
 }
 
-DATA_TYPE SemanticAnalyser::analyseVariableExpr(VariableExpr *expr) {
+Type *SemanticAnalyser::analyseVariableExpr(VariableExpr *expr) {
   if (symbolTable.find(expr->name) == symbolTable.end())
     throw std::runtime_error("Unknown variable found " + expr->name);
 
   return expr->dataType = symbolTable[expr->name].dataType;
 }
 
-DATA_TYPE SemanticAnalyser::analyseBinaryExpr(BinaryExpr *expr) {
+Type *SemanticAnalyser::analyseBinaryExpr(BinaryExpr *expr) {
 
-  DATA_TYPE left_type = expr->left->analyse(*this);
-  DATA_TYPE right_type = expr->right->analyse(*this);
+  Type *leftType = expr->left->analyse(*this);
+  Type *rightType = expr->right->analyse(*this);
 
   switch (expr->op) {
 
@@ -43,34 +43,27 @@ DATA_TYPE SemanticAnalyser::analyseBinaryExpr(BinaryExpr *expr) {
   case TOKEN_TYPE::ASTERISK:
   case TOKEN_TYPE::SLASH: {
 
-    if ((left_type != DATA_TYPE::DATATYPE_INT &&
-         left_type != DATA_TYPE::DATATYPE_FLOAT) ||
-        (right_type != DATA_TYPE::DATATYPE_INT &&
-         right_type != DATA_TYPE::DATATYPE_FLOAT)) {
-
+    if (!isNumeric(leftType) || !isNumeric(rightType)) {
       throw std::runtime_error("Invalid operand type for arithmetic operator");
     }
 
-    if (left_type == right_type) {
-      return expr->dataType = left_type;
+    if (areTypesEqual(leftType, rightType)) {
+      return expr->dataType = leftType;
     }
 
-    if (left_type == DATA_TYPE::DATATYPE_INT &&
-        right_type == DATA_TYPE::DATATYPE_FLOAT) {
+    if (areTypesEqual(leftType, intType) &&
+        areTypesEqual(rightType, floatType)) {
 
-      expr->left = std::make_unique<CastExpr>(std::move(expr->left),
-                                              DATA_TYPE::DATATYPE_FLOAT);
-
-      return expr->dataType = DATA_TYPE::DATATYPE_FLOAT;
+      expr->left = std::make_unique<CastExpr>(std::move(expr->left), floatType);
+      return expr->dataType = floatType;
     }
 
-    if (right_type == DATA_TYPE::DATATYPE_INT &&
-        left_type == DATA_TYPE::DATATYPE_FLOAT) {
+    if (areTypesEqual(leftType, floatType) &&
+        areTypesEqual(rightType, intType)) {
 
-      expr->right = std::make_unique<CastExpr>(std::move(expr->right),
-                                               DATA_TYPE::DATATYPE_FLOAT);
-
-      return expr->dataType = DATA_TYPE::DATATYPE_FLOAT;
+      expr->right =
+          std::make_unique<CastExpr>(std::move(expr->right), floatType);
+      return expr->dataType = floatType;
     }
 
     throw std::runtime_error("Type mismatch in arithmetic expression");
@@ -78,31 +71,37 @@ DATA_TYPE SemanticAnalyser::analyseBinaryExpr(BinaryExpr *expr) {
 
   case TOKEN_TYPE::ASSIGN: {
 
-    if (!dynamic_cast<VariableExpr *>(expr->left.get())) {
-      throw std::runtime_error("Left side of assignment must be a variable");
+    if (!expr->left->isLValue()) {
+      throw std::runtime_error("Left side of assignment must be assignable");
     }
 
-    if (left_type == DATA_TYPE::DATATYPE_FLOAT &&
-        right_type == DATA_TYPE::DATATYPE_INT) {
-
-      expr->right = std::make_unique<CastExpr>(std::move(expr->right),
-                                               DATA_TYPE::DATATYPE_FLOAT);
-
-      return expr->dataType = DATA_TYPE::DATATYPE_FLOAT;
-    } else if (left_type == DATA_TYPE::DATATYPE_INT &&
-               right_type == DATA_TYPE::DATATYPE_FLOAT) {
-
-      expr->right = std::make_unique<CastExpr>(std::move(expr->right),
-                                               DATA_TYPE::DATATYPE_INT);
-
-      return expr->dataType = DATA_TYPE::DATATYPE_INT;
+    if (areTypesEqual(leftType, rightType)) {
+      return expr->dataType = leftType;
     }
 
-    if (left_type != right_type) {
-      throw std::runtime_error("Type mismatch in assignment");
+    if (areTypesEqual(leftType, floatType) &&
+        areTypesEqual(rightType, intType)) {
+
+      expr->right =
+          std::make_unique<CastExpr>(std::move(expr->right), floatType);
+      return expr->dataType = floatType;
     }
 
-    return expr->dataType = left_type;
+    if (areTypesEqual(leftType, intType) &&
+        areTypesEqual(rightType, floatType)) {
+
+      expr->right = std::make_unique<CastExpr>(std::move(expr->right), intType);
+      return expr->dataType = intType;
+    }
+
+    if (isPointer(leftType) && isPointer(rightType)) {
+      if (!areTypesEqual(leftType, rightType)) {
+        throw std::runtime_error("Incompatible pointer assignment");
+      }
+      return expr->dataType = leftType;
+    }
+
+    throw std::runtime_error("Type mismatch in assignment");
   }
 
   case TOKEN_TYPE::EQUAL:
@@ -112,34 +111,30 @@ DATA_TYPE SemanticAnalyser::analyseBinaryExpr(BinaryExpr *expr) {
   case TOKEN_TYPE::OR:
   case TOKEN_TYPE::AND: {
 
-    if ((left_type != DATA_TYPE::DATATYPE_INT &&
-         left_type != DATA_TYPE::DATATYPE_FLOAT) ||
-        (right_type != DATA_TYPE::DATATYPE_INT &&
-         right_type != DATA_TYPE::DATATYPE_FLOAT)) {
-
+    if (!isNumeric(leftType) || !isNumeric(rightType)) {
       throw std::runtime_error("Invalid operand type for comparison");
     }
 
-    if (left_type != right_type) {
+    if (!areTypesEqual(leftType, rightType)) {
 
-      if (left_type == DATA_TYPE::DATATYPE_INT &&
-          right_type == DATA_TYPE::DATATYPE_FLOAT) {
+      if (areTypesEqual(leftType, intType) &&
+          areTypesEqual(rightType, floatType)) {
 
-        expr->left = std::make_unique<CastExpr>(std::move(expr->left),
-                                                DATA_TYPE::DATATYPE_FLOAT);
+        expr->left =
+            std::make_unique<CastExpr>(std::move(expr->left), floatType);
 
-      } else if (right_type == DATA_TYPE::DATATYPE_INT &&
-                 left_type == DATA_TYPE::DATATYPE_FLOAT) {
+      } else if (areTypesEqual(leftType, floatType) &&
+                 areTypesEqual(rightType, intType)) {
 
-        expr->right = std::make_unique<CastExpr>(std::move(expr->right),
-                                                 DATA_TYPE::DATATYPE_FLOAT);
+        expr->right =
+            std::make_unique<CastExpr>(std::move(expr->right), floatType);
 
       } else {
         throw std::runtime_error("Type mismatch in comparison");
       }
     }
 
-    return expr->dataType = DATA_TYPE::DATATYPE_INT;
+    return expr->dataType = intType;
   }
 
   default:
@@ -152,11 +147,34 @@ void SemanticAnalyser::analyseDeclarationStmt(DeclarationStmt *stmt) {
     throw std::runtime_error("Identifier exists");
 
   if (stmt->expr != nullptr) {
-    DATA_TYPE right_type = stmt->expr.get()->analyse(*this);
-    if (stmt->dataType != right_type) {
+    Type *right_type = stmt->expr.get()->analyse(*this);
+    if (!areTypesEqual(right_type, stmt->dataType)) {
       throw std::runtime_error("Improper Assignment Operation");
     }
   }
 
   symbolTable[stmt->identifier] = {stmt->dataType, block_number};
+}
+
+Type *SemanticAnalyser::analyseUnaryExpr(UnaryExpr *expr) {
+  Type *dataType = expr->operand.get()->analyse(*this);
+  switch (expr->op) {
+  case TOKEN_TYPE::ASTERISK: {
+    if (dataType->base != DATA_TYPE::DATATYPE_POINTER) {
+      throw std::runtime_error("Cant use * unary on a non pointer");
+    }
+    return dataType->pointee;
+  }
+  case TOKEN_TYPE::AMPERSAND: {
+    if (!expr->operand->isLValue()) {
+      throw std::runtime_error("Operand of & must be an lvalue");
+    }
+
+    Type *operandType = expr->operand->analyse(*this);
+
+    return makePointerType(operandType);
+  }
+  default:
+    throw std::runtime_error("Unsupported unary operator");
+  }
 }

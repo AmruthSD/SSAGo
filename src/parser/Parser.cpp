@@ -22,6 +22,18 @@ void Parser::expect(TOKEN_TYPE type, const std::string &message) {
 
 std::unique_ptr<Program> Parser::parse() { return parseProgram(); }
 
+Type *Parser::parseType() {
+  TOKEN_TYPE baseToken = currentToken.type;
+  advance();
+
+  Type *type = new Type{dataTypeFromToken.at(baseToken)};
+  while (match(TOKEN_TYPE::ASTERISK)) {
+    type = makePointerType(type);
+  }
+
+  return type;
+}
+
 std::unique_ptr<Program> Parser::parseProgram() {
   auto program = std::make_unique<Program>();
 
@@ -57,21 +69,18 @@ std::unique_ptr<Statement> Parser::parseStatement() {
 
 std::unique_ptr<Statement> Parser::parseDeclarationStatement() {
 
-  TOKEN_TYPE dataType = currentToken.type;
-  advance();
+  Type *type = parseType();
 
   std::string varName = currentToken.lexeme;
   expect(TOKEN_TYPE::IDENTIFIER, "Expected variable name");
 
   std::unique_ptr<Expr> initializer = nullptr;
-
   if (match(TOKEN_TYPE::ASSIGN)) {
     initializer = parseExpression();
   }
 
   expect(TOKEN_TYPE::SEMICOLON, "Expected ';' after declaration");
 
-  return std::make_unique<DeclarationStmt>(
-      varName, (*(dataTypeFromToken.find(dataType))).second,
-      std::move(initializer));
+  return std::make_unique<DeclarationStmt>(varName, type,
+                                           std::move(initializer));
 }

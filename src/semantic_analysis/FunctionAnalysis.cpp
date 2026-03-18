@@ -5,7 +5,7 @@ void SemanticAnalyser::analyseFunctionStmt(FunctionStmt *func) {
   if (symbolTable.find(func->identifier) != symbolTable.end())
     throw std::runtime_error("function identifier is used " + func->identifier);
 
-  std::vector<DATA_TYPE> argumentTypes;
+  std::vector<Type *> argumentTypes;
   for (auto [u, v] : func->arguments) {
     argumentTypes.push_back(v);
   }
@@ -43,14 +43,14 @@ void SemanticAnalyser::analyseReturn(ReturnStmt *stmt) {
   if (block_number == 0)
     throw std::runtime_error("Return cant be in the global scope");
 
-  DATA_TYPE exprDataType = stmt->expr->analyse(*this);
-  if (exprDataType != current_function_type) {
+  Type *exprDataType = stmt->expr->analyse(*this);
+  if (!areTypesEqual(exprDataType, current_function_type)) {
     stmt->expr = std::make_unique<CastExpr>(std::move(stmt->expr),
                                             current_function_type);
   }
 }
 
-DATA_TYPE SemanticAnalyser::analyseFunctionCall(CallExpr *expr) {
+Type *SemanticAnalyser::analyseFunctionCall(CallExpr *expr) {
   auto *var = dynamic_cast<VariableExpr *>(expr->callee.get());
   if (!var)
     throw std::runtime_error("Invalid function call target");
@@ -62,9 +62,9 @@ DATA_TYPE SemanticAnalyser::analyseFunctionCall(CallExpr *expr) {
 
   if (fun_external) {
     for (int i = 0; i < expr->arguments.size(); i++) {
-      DATA_TYPE expr_type = expr->arguments[i]->analyse(*this);
+      Type *expr_type = expr->arguments[i]->analyse(*this);
     }
-    return DATA_TYPE::DATATYPE_VOID;
+    return new Type{DATA_TYPE::DATATYPE_VOID, nullptr};
   } else {
     auto it = functionSymbolTable.find(functionName);
     if (it == functionSymbolTable.end())
@@ -76,8 +76,8 @@ DATA_TYPE SemanticAnalyser::analyseFunctionCall(CallExpr *expr) {
           "Number of arguments are not right in call for " + functionName);
 
     for (int i = 0; i < prop.argumentsTypes.size(); i++) {
-      DATA_TYPE expr_type = expr->arguments[i]->analyse(*this);
-      if (expr_type != prop.argumentsTypes[i])
+      Type *expr_type = expr->arguments[i]->analyse(*this);
+      if (!areTypesEqual(expr_type, prop.argumentsTypes[i]))
         expr->arguments[i] = std::make_unique<CastExpr>(
             std::move(expr->arguments[i]), prop.argumentsTypes[i]);
     }

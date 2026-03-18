@@ -8,13 +8,6 @@
 #include <stdexcept>
 #include <vector>
 
-enum class DATA_TYPE {
-  DATATYPE_FLOAT,
-  DATATYPE_INT,
-  DATATYPE_STRING,
-  DATATYPE_VOID
-};
-
 class Parser {
 private:
   Lexer &lexer;
@@ -32,6 +25,7 @@ private:
   void advance();
   bool match(TOKEN_TYPE type);
   void expect(TOKEN_TYPE type, const std::string &message);
+  Type *parseType();
 
   std::unique_ptr<Program> parseProgram();
   std::unique_ptr<Statement> parseStatement();

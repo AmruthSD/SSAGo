@@ -147,7 +147,7 @@ Token Lexer::nextToken() {
       advance();
       return {"&&", TOKEN_TYPE::OR};
     }
-    return {"&", TOKEN_TYPE::UNKNOWN};
+    return {"&", TOKEN_TYPE::AMPERSAND};
   }
   }
 
