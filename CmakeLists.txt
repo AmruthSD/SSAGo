@@ -8,20 +8,24 @@ find_package(LLVM REQUIRED CONFIG)
 
 include_directories(${LLVM_INCLUDE_DIRS})
 add_definitions(${LLVM_DEFINITIONS})
-include_directories(include)
 
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
-    "src/*.cpp"
-    "src/**/*.cpp"
+    "compiler/src/*.cpp"
+    "complier/src/**/*.cpp"
 )
-
 add_executable(compiler ${SOURCES})
-
+target_include_directories(compiler PUBLIC compiler/include)
 llvm_map_components_to_libnames(LLVM_LIBS
     core
     irreader
     support
     passes
 )
-
 target_link_libraries(compiler ${LLVM_LIBS})
+
+file(GLOB_RECURSE RUNTIME_SOURCES CONFIGURE_DEPENDS
+    "runtime/src/*.cpp",
+    "runtime/src/**/*.cpp"
+)
+add_library(runtime STATIC ${RUNTIME_SOURCES})
+target_include_directories(runtime PUBLIC runtime/include)

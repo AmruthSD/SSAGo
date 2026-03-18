@@ -16,7 +16,7 @@ llvm::Value *IRGenerator::generateFunction(FunctionStmt *func) {
 
   llvm::Function *function =
       llvm::Function::Create(functionType, llvm::Function::ExternalLinkage,
-                             func->identifier, module.get());
+                             "__user_" + func->identifier, module.get());
 
   unsigned idx = 0;
   for (auto &arg : function->args())
@@ -116,6 +116,9 @@ llvm::Value *IRGenerator::generateFunctionCall(CallExpr *expr) {
     throw std::runtime_error("Invalid function call target in codegen");
 
   std::string functionName = var->name;
+
+  if (external_functions.find(functionName) == external_functions.end())
+    functionName = "__user_" + functionName;
 
   llvm::Function *function = module->getFunction(functionName);
   if (!function)
