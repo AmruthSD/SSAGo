@@ -29,5 +29,6 @@ int main(int argc, char **argv) {
   IRGenerator irGen(semanticAnalyser);
   irGen.optimizeModule();
   irGen.writeIRToFile("output.ll");
+  std::cout << "IR written to the output.ll\n";
   return 0;
 }

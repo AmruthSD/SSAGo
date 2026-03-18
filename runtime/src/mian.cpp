@@ -1,7 +1,11 @@
 #include <iostream>
 
+extern "C" int __user_main();
+
 int main() {
   std::cout << "hello runtime"
             << "\n";
-  return 0;
+
+  int result = __user_main();
+  return result;
 }
