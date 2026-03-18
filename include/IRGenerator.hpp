@@ -48,11 +48,14 @@ public:
   llvm::Value *generateFunctionCall(CallExpr *);
   llvm::Value *generateUnaryExpr(UnaryExpr *);
   llvm::Value *generateUnaryExprLValue(UnaryExpr *);
+  llvm::Value *generateSizeofExpr(SizeofExpr *);
+
   llvm::Function *declareExternalFunction(const std::string &name,
                                           llvm::Type *returnType,
                                           std::vector<llvm::Type *> paramTypes,
                                           bool isVarArg);
   llvm::Function *getOrDeclarePrintf();
   llvm::Function *getOrDeclareScanf();
+  llvm::Function *getOrDeclareMalloc();
   llvm::Type *getLLVMType(Type *type, llvm::LLVMContext &context);
 };

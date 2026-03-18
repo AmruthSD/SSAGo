@@ -134,3 +134,10 @@ llvm::Value *IRGenerator::generateFunctionCall(CallExpr *expr) {
 
   return builder.CreateCall(function, args, functionName + "_call");
 }
+
+llvm::Value *IRGenerator::generateSizeofExpr(SizeofExpr *expr) {
+  llvm::Type *type = getLLVMType(expr->dataType, context);
+  uint64_t size = module->getDataLayout().getTypeAllocSize(type);
+
+  return llvm::ConstantInt::get(llvm::Type::getInt64Ty(context), size);
+}

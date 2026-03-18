@@ -81,3 +81,13 @@ llvm::Value *UnaryExpr::codegenLValue(IRGenerator &irGen) {
 }
 
 bool UnaryExpr::isLValue() { return op == TOKEN_TYPE::ASTERISK; }
+
+SizeofExpr::SizeofExpr(Type *type) { dataType = type; }
+
+Type *SizeofExpr::analyse(SemanticAnalyser &analyser) {
+  return dataType = analyser.analyseSizeofExpr(this);
+}
+
+llvm::Value *SizeofExpr::codegen(IRGenerator &irGen) {
+  return irGen.generateSizeofExpr(this);
+}

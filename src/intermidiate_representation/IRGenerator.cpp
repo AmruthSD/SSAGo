@@ -128,12 +128,27 @@ llvm::Value *IRGenerator::generateBinary(BinaryExpr *expr) {
 
     llvm::Type *ptrElemTy = ptr->getType()->getPointerElementType();
     if (value->getType() != ptrElemTy) {
-      llvm::errs() << "Type mismatch in assignment IR\n";
-      return nullptr;
+
+      if (value->getType()->isPointerTy() && ptrElemTy->isPointerTy()) {
+        value = builder.CreateBitCast(value, ptrElemTy);
+      } else if (value->getType()->isIntegerTy() && ptrElemTy->isIntegerTy()) {
+        unsigned fromBits = value->getType()->getIntegerBitWidth();
+        unsigned toBits = ptrElemTy->getIntegerBitWidth();
+
+        if (fromBits < toBits) {
+          value = builder.CreateZExt(value, ptrElemTy);
+        } else if (fromBits > toBits) {
+          value = builder.CreateTrunc(value, ptrElemTy);
+        }
+      }
+
+      else {
+        llvm::errs() << "Invalid type mismatch in assignment\n";
+        return nullptr;
+      }
     }
 
     builder.CreateStore(value, ptr);
-
     return value;
   }
 
@@ -330,6 +345,23 @@ llvm::Value *IRGenerator::generateDeclaration(DeclarationStmt *stmt) {
 
     if (stmt->expr != nullptr) {
       initValue = stmt->expr->codegen(*this);
+      if (initValue->getType() != varType) {
+        if (initValue->getType()->isPointerTy() && varType->isPointerTy()) {
+          initValue = builder.CreateBitCast(initValue, varType);
+        } else if (initValue->getType()->isIntegerTy() &&
+                   varType->isIntegerTy()) {
+          unsigned fromBits = initValue->getType()->getIntegerBitWidth();
+          unsigned toBits = varType->getIntegerBitWidth();
+          if (fromBits < toBits) {
+            initValue = builder.CreateZExt(initValue, varType);
+          } else if (fromBits > toBits) {
+            initValue = builder.CreateTrunc(initValue, varType);
+          }
+        } else {
+          llvm::errs() << "Type mismatch in variable initialization\n";
+          return nullptr;
+        }
+      }
     } else {
       if (varType->isPointerTy()) {
         initValue = llvm::ConstantPointerNull::get(

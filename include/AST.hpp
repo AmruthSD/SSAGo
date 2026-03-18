@@ -123,6 +123,13 @@ public:
   bool isLValue() override;
 };
 
+class SizeofExpr : public Expr {
+public:
+  SizeofExpr(Type *);
+  Type *analyse(SemanticAnalyser &analyser) override;
+  llvm::Value *codegen(IRGenerator &irGen) override;
+};
+
 class DeclarationStmt : public Statement {
 public:
   std::string identifier;

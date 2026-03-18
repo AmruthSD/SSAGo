@@ -97,6 +97,16 @@ std::unique_ptr<Expr> Parser::parseExpression(int precedence) {
     break;
   }
 
+  case TOKEN_TYPE::SIZEOF: {
+    advance();
+    expect(TOKEN_TYPE::LPAREN, "( after sizeof");
+    Type *type = parseType();
+    expect(TOKEN_TYPE::RPAREN, ") after type in sizeof");
+
+    left = std::make_unique<SizeofExpr>(type);
+    break;
+  }
+
   default:
     throw std::runtime_error("Unexpected token in expression " +
                              currentToken.lexeme);

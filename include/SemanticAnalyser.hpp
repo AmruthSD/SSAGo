@@ -45,4 +45,5 @@ public:
   Type *analyseVariableExpr(VariableExpr *expr);
   Type *analyseUnaryExpr(UnaryExpr *expr);
   Type *analyseFunctionCall(CallExpr *expr);
+  Type *analyseSizeofExpr(SizeofExpr *expr);
 };

@@ -33,7 +33,15 @@ llvm::Function *IRGenerator::getOrDeclareScanf() {
                                  {i8PtrTy}, true);
 }
 
+llvm::Function *IRGenerator::getOrDeclareMalloc() {
+  llvm::Type *i8PtrTy = llvm::Type::getInt8PtrTy(context);
+  llvm::Type *i64Ty = llvm::Type::getInt64Ty(context);
+
+  return declareExternalFunction("malloc", i8PtrTy, {i64Ty}, false);
+}
+
 void IRGenerator::generateAllExternalFUnctions() {
   getOrDeclarePrintf();
   getOrDeclareScanf();
+  getOrDeclareMalloc();
 }

@@ -85,3 +85,11 @@ Type *SemanticAnalyser::analyseFunctionCall(CallExpr *expr) {
     return prop.returnType;
   }
 }
+
+Type *SemanticAnalyser::analyseSizeofExpr(SizeofExpr *expr) {
+  if (expr->dataType == nullptr ||
+      expr->dataType->base == DATA_TYPE::DATATYPE_VOID)
+    throw std::runtime_error("Sizeof cant have type void be null");
+
+  return new Type{DATA_TYPE::DATATYPE_INT, nullptr};
+}
