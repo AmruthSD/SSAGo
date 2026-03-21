@@ -40,8 +40,18 @@ llvm::Function *IRGenerator::getOrDeclareMalloc() {
   return declareExternalFunction("malloc", i8PtrTy, {i64Ty}, false);
 }
 
+llvm::Function *IRGenerator::getOrDeclareSpawn() {
+
+  llvm::Type *voidTy = llvm::Type::getVoidTy(context);
+  llvm::Type *i8PtrTy = llvm::Type::getInt8PtrTy(context);
+
+  return declareExternalFunction("runtime_spawn", voidTy, {i8PtrTy, i8PtrTy},
+                                 false);
+}
+
 void IRGenerator::generateAllExternalFUnctions() {
   getOrDeclarePrintf();
   getOrDeclareScanf();
   getOrDeclareMalloc();
+  getOrDeclareSpawn();
 }

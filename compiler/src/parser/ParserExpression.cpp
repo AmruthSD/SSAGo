@@ -9,18 +9,6 @@ std::unique_ptr<Statement> Parser::parseExpressionStatement() {
   return std::make_unique<ExpressionStmt>(std::move(expr));
 }
 
-enum Precedence {
-  LOWEST = 0,
-  ASSIGN,
-  OR,
-  AND,
-  EQUALITY,
-  COMPARISON,
-  SUM,
-  PRODUCT,
-  CALL,
-};
-
 int getPrecedence(TOKEN_TYPE type) {
   switch (type) {
   case TOKEN_TYPE::ASSIGN:

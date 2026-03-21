@@ -62,6 +62,8 @@ std::unique_ptr<Statement> Parser::parseStatement() {
     return parseBreakStatement();
   } else if (currentToken.type == TOKEN_TYPE::CONTINUE) {
     return parseContinueStatement();
+  } else if (currentToken.type == TOKEN_TYPE::GO) {
+    return parseGoStatement();
   }
 
   return parseExpressionStatement();

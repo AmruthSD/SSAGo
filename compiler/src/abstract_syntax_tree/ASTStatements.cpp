@@ -101,3 +101,14 @@ void ContinueStmt::analyse(SemanticAnalyser &analyser) {
 llvm::Value *ContinueStmt::codegen(IRGenerator &irGen) {
   return irGen.generateContinue(this);
 }
+
+GoStmt::GoStmt(std::string callee, std::vector<std::unique_ptr<Expr>> args)
+    : callee(std::move(callee)), arguments(std::move(args)) {}
+
+void GoStmt::analyse(SemanticAnalyser &analyser) {
+  analyser.analyseGoFunc(this);
+}
+
+llvm::Value *GoStmt::codegen(IRGenerator &irGen) {
+  return irGen.generateGoFunc(this);
+}

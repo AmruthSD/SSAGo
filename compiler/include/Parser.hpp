@@ -8,6 +8,18 @@
 #include <stdexcept>
 #include <vector>
 
+enum Precedence {
+  LOWEST = 0,
+  ASSIGN,
+  OR,
+  AND,
+  EQUALITY,
+  COMPARISON,
+  SUM,
+  PRODUCT,
+  CALL,
+};
+
 class Parser {
 private:
   Lexer &lexer;
@@ -39,6 +51,7 @@ private:
   std::unique_ptr<Statement> parseWhileStatement();
   std::unique_ptr<Statement> parseBreakStatement();
   std::unique_ptr<Statement> parseContinueStatement();
+  std::unique_ptr<Statement> parseGoStatement();
 
 public:
   Parser(Lexer &lexer);

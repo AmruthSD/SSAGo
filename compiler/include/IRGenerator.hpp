@@ -17,6 +17,7 @@ private:
   std::vector<llvm::BasicBlock *> continueTargets;
 
   std::vector<std::unordered_map<std::string, llvm::Value *>> namedValues;
+  std::unordered_map<llvm::Function *, llvm::Function *> wrapperMap;
 
 public:
   IRGenerator(SemanticAnalyser &semanticAnalyser);
@@ -45,6 +46,7 @@ public:
   llvm::Value *generateWhile(WhileStmt *);
   llvm::Value *generateBreak(BreakStmt *);
   llvm::Value *generateContinue(ContinueStmt *);
+  llvm::Value *generateGoFunc(GoStmt *);
   llvm::Value *generateFunctionCall(CallExpr *);
   llvm::Value *generateUnaryExpr(UnaryExpr *);
   llvm::Value *generateUnaryExprLValue(UnaryExpr *);
@@ -57,5 +59,7 @@ public:
   llvm::Function *getOrDeclarePrintf();
   llvm::Function *getOrDeclareScanf();
   llvm::Function *getOrDeclareMalloc();
+  llvm::Function *getOrDeclareSpawn();
+  llvm::Function *getOrCreateWrapper(llvm::Function *);
   llvm::Type *getLLVMType(Type *type, llvm::LLVMContext &context);
 };

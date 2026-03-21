@@ -9,8 +9,8 @@
 
 int main(int argc, char **argv) {
 
-  if (argc <= 1) {
-    std::cerr << "Usage: " << argv[0] << " <input_file>\n";
+  if (argc <= 2) {
+    std::cerr << "Usage: " << argv[0] << " <input_file> <output_file>\n";
     return 1;
   }
 
@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
   SemanticAnalyser semanticAnalyser(parser);
   IRGenerator irGen(semanticAnalyser);
   irGen.optimizeModule();
-  irGen.writeIRToFile("output.ll");
+  irGen.writeIRToFile(argv[2]);
   std::cout << "IR written to the output.ll\n";
   return 0;
 }

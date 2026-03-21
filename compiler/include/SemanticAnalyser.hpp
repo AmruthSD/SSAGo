@@ -40,6 +40,7 @@ public:
   void analyseWhile(WhileStmt *stmt);
   void analyseBreak(BreakStmt *stmt);
   void analyseContinue(ContinueStmt *stmt);
+  void analyseGoFunc(GoStmt *stmt);
   Type *analyseBinaryExpr(BinaryExpr *expr);
   Type *analyseLiteralExpr(LiteralExpr *expr);
   Type *analyseVariableExpr(VariableExpr *expr);

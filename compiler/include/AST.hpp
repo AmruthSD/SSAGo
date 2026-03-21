@@ -212,3 +212,13 @@ public:
   void analyse(SemanticAnalyser &analyser) override;
   llvm::Value *codegen(IRGenerator &irGen) override;
 };
+
+class GoStmt : public Statement {
+public:
+  std::string callee;
+  std::vector<std::unique_ptr<Expr>> arguments;
+
+  GoStmt(std::string callee, std::vector<std::unique_ptr<Expr>> args);
+  void analyse(SemanticAnalyser &analyser) override;
+  llvm::Value *codegen(IRGenerator &irGen) override;
+};

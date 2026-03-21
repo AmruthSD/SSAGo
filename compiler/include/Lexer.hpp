@@ -18,6 +18,7 @@ enum class TOKEN_TYPE {
   BREAK,
   CONTINUE,
   SIZEOF,
+  GO,
 
   // Literals
   INTEGER_LITERAL,
@@ -73,7 +74,8 @@ private:
       {"while", TOKEN_TYPE::WHILE},
       {"continue", TOKEN_TYPE::CONTINUE},
       {"break", TOKEN_TYPE::BREAK},
-      {"sizeof", TOKEN_TYPE::SIZEOF}};
+      {"sizeof", TOKEN_TYPE::SIZEOF},
+      {"go", TOKEN_TYPE::GO}};
 
   void advance();
   void skipWhitespace();

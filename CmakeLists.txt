@@ -5,13 +5,14 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(LLVM REQUIRED CONFIG)
+find_package(Boost REQUIRED COMPONENTS context)
 
 include_directories(${LLVM_INCLUDE_DIRS})
 add_definitions(${LLVM_DEFINITIONS})
 
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     "compiler/src/*.cpp"
-    "complier/src/**/*.cpp"
+    "compiler/src/**/*.cpp"
 )
 add_executable(compiler ${SOURCES})
 target_include_directories(compiler PUBLIC compiler/include)
@@ -29,3 +30,4 @@ file(GLOB_RECURSE RUNTIME_SOURCES CONFIGURE_DEPENDS
 )
 add_library(runtime STATIC ${RUNTIME_SOURCES})
 target_include_directories(runtime PUBLIC runtime/include)
+target_link_libraries(runtime PUBLIC Boost::context)

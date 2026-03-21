@@ -10,8 +10,8 @@ PROGRAM="$BUILD_DIR/program"
 
 cmake --build "$BUILD_DIR"
 
-"$BUILD_DIR/compiler" "$INPUT_FILE"
+"$BUILD_DIR/compiler" "$INPUT_FILE" "$IR_FILE"
 
-clang++ "$IR_FILE" "$RUNTIME_LIB" -o "$PROGRAM"
+clang++ "$IR_FILE" "$RUNTIME_LIB" -o "$PROGRAM" -lboost_context
 
 "$PROGRAM"
