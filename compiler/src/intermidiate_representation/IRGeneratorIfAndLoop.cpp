@@ -74,6 +74,7 @@ llvm::Value *IRGenerator::generateWhile(WhileStmt *stmt) {
   builder.SetInsertPoint(bodyBB);
   breakTargets.push_back(afterBB);
   continueTargets.push_back(condBB);
+  generateYieldCall();
   stmt->thenBranch->codegen(*this);
   builder.CreateBr(condBB);
 

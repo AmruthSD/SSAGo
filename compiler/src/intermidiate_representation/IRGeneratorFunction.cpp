@@ -111,6 +111,8 @@ llvm::Value *IRGenerator::generateReturn(ReturnStmt *stmt) {
 
 llvm::Value *IRGenerator::generateFunctionCall(CallExpr *expr) {
 
+  generateYieldCall();
+
   auto *var = dynamic_cast<VariableExpr *>(expr->callee.get());
   if (!var)
     throw std::runtime_error("Invalid function call target in codegen");

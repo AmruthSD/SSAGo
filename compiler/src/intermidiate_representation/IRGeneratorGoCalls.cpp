@@ -2,7 +2,7 @@
 
 llvm::Value *IRGenerator::generateGoFunc(GoStmt *stmt) {
   std::string funcName = stmt->callee;
-  if (external_functions.find(funcName) != external_functions.end())
+  if (external_functions.find(funcName) == external_functions.end())
     funcName = "__user_" + funcName;
 
   llvm::Function *func = module->getFunction(funcName);

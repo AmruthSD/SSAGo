@@ -49,9 +49,20 @@ llvm::Function *IRGenerator::getOrDeclareSpawn() {
                                  false);
 }
 
+llvm::Function *IRGenerator::getOrDeclareYield() {
+  return declareExternalFunction("yield", llvm::Type::getVoidTy(context), {},
+                                 false);
+}
+
+void IRGenerator::generateYieldCall() {
+  llvm::Function *yieldFn = module->getFunction("yield");
+  builder.CreateCall(yieldFn, {});
+}
+
 void IRGenerator::generateAllExternalFUnctions() {
   getOrDeclarePrintf();
   getOrDeclareScanf();
   getOrDeclareMalloc();
   getOrDeclareSpawn();
+  getOrDeclareYield();
 }

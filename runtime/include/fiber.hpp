@@ -9,6 +9,7 @@ public:
 
 private:
   Context ctx;
+  Context sched_ctx;
   Closure *closure;
   bool finished = false;
 
@@ -16,6 +17,7 @@ public:
   Fiber(Closure *c);
 
   void resume();
+  void yield();
 
   bool isFinished() const { return finished; }
 };

@@ -60,6 +60,8 @@ public:
   llvm::Function *getOrDeclareScanf();
   llvm::Function *getOrDeclareMalloc();
   llvm::Function *getOrDeclareSpawn();
+  llvm::Function *getOrDeclareYield();
+  void generateYieldCall();
   llvm::Function *getOrCreateWrapper(llvm::Function *);
   llvm::Type *getLLVMType(Type *type, llvm::LLVMContext &context);
 };

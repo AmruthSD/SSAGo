@@ -24,6 +24,5 @@ std::unique_ptr<Statement> Parser::parseGoStatement() {
 
   advance();
   expect(TOKEN_TYPE::SEMICOLON, "after func call in go we need ;");
-
   return std::make_unique<GoStmt>(func, std::move(args));
 }

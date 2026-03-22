@@ -27,4 +27,5 @@ void SemanticAnalyser::analyseGoFunc(GoStmt *expr) {
             std::move(expr->arguments[i]), prop.argumentsTypes[i]);
     }
   }
+  std::cout << "Go analysis made" << std::endl;
 }

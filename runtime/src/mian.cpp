@@ -8,7 +8,7 @@ extern "C" void __user_main_wrapper(void *args) { __user_main(); }
 int main() {
   std::cout << "hello runtime"
             << "\n";
-
+  Runtime::getInstance().init_scheduler();
   runtime_spawn((void *)__user_main_wrapper, nullptr);
 
   Runtime::getInstance().run();

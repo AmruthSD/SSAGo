@@ -13,7 +13,7 @@ public:
 
   void run();
 
-  void yield_current(boost::context::fiber &&ctx);
+  void yield_current();
 
 private:
   Fiber *current = nullptr;

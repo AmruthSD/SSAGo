@@ -10,3 +10,5 @@ extern "C" void runtime_spawn(void *fn, void *args) {
 
   Runtime::getInstance().spawn(c);
 }
+
+extern "C" void yield() { Runtime::getInstance().yield(); }

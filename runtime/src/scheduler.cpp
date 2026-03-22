@@ -17,6 +17,4 @@ void Scheduler::run() {
   }
 }
 
-void Scheduler::yield_current(boost::context::fiber &&ctx) {
-  main_ctx = std::move(ctx);
-}
+void Scheduler::yield_current() { current->yield(); }
