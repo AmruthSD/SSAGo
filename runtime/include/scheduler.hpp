@@ -15,6 +15,5 @@ public:
 
   void yield_current();
 
-private:
   Fiber *current = nullptr;
 };

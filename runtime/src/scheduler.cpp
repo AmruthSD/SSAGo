@@ -9,10 +9,10 @@ void Scheduler::run() {
 
     current->resume();
 
-    if (!current->isFinished()) {
-      run_queue.push_back(current);
-    } else {
+    if (current->isFinished()) {
       delete current;
+    } else if (!current->suspended) {
+      run_queue.push_back(current);
     }
   }
 }

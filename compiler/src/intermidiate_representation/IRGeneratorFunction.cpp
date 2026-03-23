@@ -137,7 +137,11 @@ llvm::Value *IRGenerator::generateFunctionCall(CallExpr *expr) {
     args.push_back(argVal);
   }
 
-  return builder.CreateCall(function, args, functionName + "_call");
+  llvm::FunctionType *ft = function->getFunctionType();
+  std::string callName =
+      ft->getReturnType()->isVoidTy() ? "" : functionName + "_call";
+
+  return builder.CreateCall(function, args, callName);
 }
 
 llvm::Value *IRGenerator::generateSizeofExpr(SizeofExpr *expr) {

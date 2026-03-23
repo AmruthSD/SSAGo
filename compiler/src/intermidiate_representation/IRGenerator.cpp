@@ -14,6 +14,9 @@ llvm::Type *IRGenerator::getLLVMType(Type *type, llvm::LLVMContext &context) {
   case DATA_TYPE::DATATYPE_FLOAT:
     return llvm::Type::getDoubleTy(context);
 
+  case DATA_TYPE::DATATYPE_WAITGROUP:
+    return llvm::Type::getInt8PtrTy(context);
+
   case DATA_TYPE::DATATYPE_VOID:
     return llvm::Type::getVoidTy(context);
 

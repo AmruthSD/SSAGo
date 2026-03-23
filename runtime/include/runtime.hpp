@@ -14,7 +14,5 @@ public:
   void run();
 
   void init_scheduler();
-
-private:
   Scheduler scheduler;
 };

@@ -19,5 +19,6 @@ public:
   void resume();
   void yield();
 
+  bool suspended = false;
   bool isFinished() const { return finished; }
 };

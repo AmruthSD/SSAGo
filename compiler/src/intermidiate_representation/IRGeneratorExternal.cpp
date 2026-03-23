@@ -59,10 +59,38 @@ void IRGenerator::generateYieldCall() {
   builder.CreateCall(yieldFn, {});
 }
 
+llvm::Function *IRGenerator::getOrDeclareWaitGroupNew() {
+  return declareExternalFunction("waitgroup_new",
+                                 llvm::Type::getInt8PtrTy(context), {}, false);
+}
+
+llvm::Function *IRGenerator::getOrDeclareWaitGroupAdd() {
+  return declareExternalFunction(
+      "waitgroup_add", llvm::Type::getVoidTy(context),
+      {llvm::Type::getInt8PtrTy(context), llvm::Type::getInt32Ty(context)},
+      false);
+}
+
+llvm::Function *IRGenerator::getOrDeclareWaitGroupDone() {
+  return declareExternalFunction("waitgroup_done",
+                                 llvm::Type::getVoidTy(context),
+                                 {llvm::Type::getInt8PtrTy(context)}, false);
+}
+
+llvm::Function *IRGenerator::getOrDeclareWaitGroupWait() {
+  return declareExternalFunction("waitgroup_wait",
+                                 llvm::Type::getVoidTy(context),
+                                 {llvm::Type::getInt8PtrTy(context)}, false);
+}
+
 void IRGenerator::generateAllExternalFUnctions() {
   getOrDeclarePrintf();
   getOrDeclareScanf();
   getOrDeclareMalloc();
   getOrDeclareSpawn();
   getOrDeclareYield();
+  getOrDeclareWaitGroupNew();
+  getOrDeclareWaitGroupAdd();
+  getOrDeclareWaitGroupDone();
+  getOrDeclareWaitGroupWait();
 }

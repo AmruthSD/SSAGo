@@ -10,6 +10,7 @@ enum class TOKEN_TYPE {
   DATATYPE_FLOAT,
   DATATYPE_STRING,
   DATATYPE_VOID,
+  DATATYPE_WAITGROUP,
   FUNCTION,
   RETURN,
   IF,
@@ -75,7 +76,8 @@ private:
       {"continue", TOKEN_TYPE::CONTINUE},
       {"break", TOKEN_TYPE::BREAK},
       {"sizeof", TOKEN_TYPE::SIZEOF},
-      {"go", TOKEN_TYPE::GO}};
+      {"go", TOKEN_TYPE::GO},
+      {"WaitGrp", TOKEN_TYPE::DATATYPE_WAITGROUP}};
 
   void advance();
   void skipWhitespace();

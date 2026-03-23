@@ -61,6 +61,10 @@ public:
   llvm::Function *getOrDeclareMalloc();
   llvm::Function *getOrDeclareSpawn();
   llvm::Function *getOrDeclareYield();
+  llvm::Function *getOrDeclareWaitGroupNew();
+  llvm::Function *getOrDeclareWaitGroupAdd();
+  llvm::Function *getOrDeclareWaitGroupDone();
+  llvm::Function *getOrDeclareWaitGroupWait();
   void generateYieldCall();
   llvm::Function *getOrCreateWrapper(llvm::Function *);
   llvm::Type *getLLVMType(Type *type, llvm::LLVMContext &context);
