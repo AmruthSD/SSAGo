@@ -1,5 +1,5 @@
 #include <AST.hpp>
-#include <IRGenerator.hpp>
+#include <CustomIRGenerator.hpp>
 #include <SemanticAnalyser.hpp>
 
 Program::Program() = default;
@@ -11,6 +11,6 @@ void Program::analyse(SemanticAnalyser &analyser) {
   analyser.analyseProgram(this);
 }
 
-llvm::Value *Program::codegen(IRGenerator &irGen) {
+custom_ir::Value *Program::codegen(custom_ir::IRGenerator &irGen) {
   return irGen.generateProgram(this);
 }

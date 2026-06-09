@@ -1,5 +1,5 @@
 #include <AST.hpp>
-#include <IRGenerator.hpp>
+#include <CustomIRGenerator.hpp>
 #include <SemanticAnalyser.hpp>
 
 BinaryExpr::BinaryExpr(TOKEN_TYPE oper, std::unique_ptr<Expr> lhs,
@@ -10,7 +10,7 @@ Type *BinaryExpr::analyse(SemanticAnalyser &analyser) {
   return dataType = analyser.analyseBinaryExpr(this);
 }
 
-llvm::Value *BinaryExpr::codegen(IRGenerator &irGen) {
+custom_ir::Value *BinaryExpr::codegen(custom_ir::IRGenerator &irGen) {
   return irGen.generateBinary(this);
 }
 
@@ -22,7 +22,7 @@ Type *LiteralExpr::analyse(SemanticAnalyser &analyser) {
   return dataType = analyser.analyseLiteralExpr(this);
 }
 
-llvm::Value *LiteralExpr::codegen(IRGenerator &irGen) {
+custom_ir::Value *LiteralExpr::codegen(custom_ir::IRGenerator &irGen) {
   return irGen.generateLiteral(this);
 }
 
@@ -33,7 +33,7 @@ CastExpr::CastExpr(std::unique_ptr<Expr> expr, Type *dataType)
 
 Type *CastExpr::analyse(SemanticAnalyser &analyser) { return dataType; }
 
-llvm::Value *CastExpr::codegen(IRGenerator &irGen) {
+custom_ir::Value *CastExpr::codegen(custom_ir::IRGenerator &irGen) {
   return irGen.generateCast(this);
 }
 
@@ -43,11 +43,11 @@ Type *VariableExpr::analyse(SemanticAnalyser &analyser) {
   return dataType = analyser.analyseVariableExpr(this);
 }
 
-llvm::Value *VariableExpr::codegen(IRGenerator &irGen) {
+custom_ir::Value *VariableExpr::codegen(custom_ir::IRGenerator &irGen) {
   return irGen.generateVariable(this);
 }
 
-llvm::Value *VariableExpr::codegenLValue(IRGenerator &irGen) {
+custom_ir::Value *VariableExpr::codegenLValue(custom_ir::IRGenerator &irGen) {
   return irGen.generateVariableLValue(this);
 }
 
@@ -61,7 +61,7 @@ Type *CallExpr::analyse(SemanticAnalyser &analyser) {
   return dataType = analyser.analyseFunctionCall(this);
 }
 
-llvm::Value *CallExpr::codegen(IRGenerator &irGen) {
+custom_ir::Value *CallExpr::codegen(custom_ir::IRGenerator &irGen) {
   return irGen.generateFunctionCall(this);
 }
 
@@ -72,11 +72,11 @@ Type *UnaryExpr::analyse(SemanticAnalyser &analyser) {
   return dataType = analyser.analyseUnaryExpr(this);
 }
 
-llvm::Value *UnaryExpr::codegen(IRGenerator &irGen) {
+custom_ir::Value *UnaryExpr::codegen(custom_ir::IRGenerator &irGen) {
   return irGen.generateUnaryExpr(this);
 }
 
-llvm::Value *UnaryExpr::codegenLValue(IRGenerator &irGen) {
+custom_ir::Value *UnaryExpr::codegenLValue(custom_ir::IRGenerator &irGen) {
   return irGen.generateUnaryExprLValue(this);
 }
 
@@ -88,6 +88,6 @@ Type *SizeofExpr::analyse(SemanticAnalyser &analyser) {
   return dataType = analyser.analyseSizeofExpr(this);
 }
 
-llvm::Value *SizeofExpr::codegen(IRGenerator &irGen) {
+custom_ir::Value *SizeofExpr::codegen(custom_ir::IRGenerator &irGen) {
   return irGen.generateSizeofExpr(this);
 }

@@ -1,5 +1,5 @@
 #include <AST.hpp>
-#include <IRGenerator.hpp>
+#include <CustomIRGenerator.hpp>
 #include <SemanticAnalyser.hpp>
 
 ExpressionStmt::ExpressionStmt(std::unique_ptr<Expr> expr)
@@ -9,7 +9,7 @@ void ExpressionStmt::analyse(SemanticAnalyser &analyser) {
   analyser.analyseExpressionStmt(this);
 }
 
-llvm::Value *ExpressionStmt::codegen(IRGenerator &irGen) {
+custom_ir::Value *ExpressionStmt::codegen(custom_ir::IRGenerator &irGen) {
   return irGen.generateExpressionStmt(this);
 }
 
@@ -22,7 +22,7 @@ void DeclarationStmt::analyse(SemanticAnalyser &analyser) {
   analyser.analyseDeclarationStmt(this);
 }
 
-llvm::Value *DeclarationStmt::codegen(IRGenerator &irGen) {
+custom_ir::Value *DeclarationStmt::codegen(custom_ir::IRGenerator &irGen) {
   return irGen.generateDeclaration(this);
 }
 
@@ -36,7 +36,7 @@ void FunctionStmt::analyse(SemanticAnalyser &analyser) {
   analyser.analyseFunctionStmt(this);
 }
 
-llvm::Value *FunctionStmt::codegen(IRGenerator &irGen) {
+custom_ir::Value *FunctionStmt::codegen(custom_ir::IRGenerator &irGen) {
   return irGen.generateFunction(this);
 }
 
@@ -47,7 +47,7 @@ void BlockStmt::analyse(SemanticAnalyser &analyser) {
   analyser.analyseBlock(this);
 }
 
-llvm::Value *BlockStmt::codegen(IRGenerator &irGen) {
+custom_ir::Value *BlockStmt::codegen(custom_ir::IRGenerator &irGen) {
   return irGen.generateBlock(this);
 }
 
@@ -57,7 +57,7 @@ void ReturnStmt::analyse(SemanticAnalyser &analyser) {
   analyser.analyseReturn(this);
 }
 
-llvm::Value *ReturnStmt::codegen(IRGenerator &irGen) {
+custom_ir::Value *ReturnStmt::codegen(custom_ir::IRGenerator &irGen) {
   return irGen.generateReturn(this);
 }
 
@@ -71,7 +71,7 @@ void IfStmt::analyse(SemanticAnalyser &analyser) {
   analyser.analyseIfElse(this);
 }
 
-llvm::Value *IfStmt::codegen(IRGenerator &irGen) {
+custom_ir::Value *IfStmt::codegen(custom_ir::IRGenerator &irGen) {
   return irGen.generateIfElse(this);
 }
 
@@ -83,7 +83,7 @@ void WhileStmt::analyse(SemanticAnalyser &analyser) {
   analyser.analyseWhile(this);
 }
 
-llvm::Value *WhileStmt::codegen(IRGenerator &irGen) {
+custom_ir::Value *WhileStmt::codegen(custom_ir::IRGenerator &irGen) {
   return irGen.generateWhile(this);
 }
 
@@ -91,14 +91,14 @@ void BreakStmt::analyse(SemanticAnalyser &analyser) {
   analyser.analyseBreak(this);
 }
 
-llvm::Value *BreakStmt::codegen(IRGenerator &irGen) {
+custom_ir::Value *BreakStmt::codegen(custom_ir::IRGenerator &irGen) {
   return irGen.generateBreak(this);
 }
 void ContinueStmt::analyse(SemanticAnalyser &analyser) {
   analyser.analyseContinue(this);
 }
 
-llvm::Value *ContinueStmt::codegen(IRGenerator &irGen) {
+custom_ir::Value *ContinueStmt::codegen(custom_ir::IRGenerator &irGen) {
   return irGen.generateContinue(this);
 }
 
@@ -109,6 +109,6 @@ void GoStmt::analyse(SemanticAnalyser &analyser) {
   analyser.analyseGoFunc(this);
 }
 
-llvm::Value *GoStmt::codegen(IRGenerator &irGen) {
+custom_ir::Value *GoStmt::codegen(custom_ir::IRGenerator &irGen) {
   return irGen.generateGoFunc(this);
 }

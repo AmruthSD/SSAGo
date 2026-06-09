@@ -1,5 +1,6 @@
 #pragma once
 
+#include <CustomIR.hpp>
 #include <Lexer.hpp>
 #include <Type.hpp>
 #include <llvm/IR/Value.h>
@@ -26,14 +27,14 @@ public:
   explicit Program(std::vector<std::unique_ptr<Statement>> stmts);
 
   void analyse(SemanticAnalyser &analyser);
-  llvm::Value *codegen(IRGenerator &irGen);
+  custom_ir::Value *codegen(custom_ir::IRGenerator &irGen);
 };
 
 class Statement : public ASTNode {
 public:
   virtual ~Statement() = default;
   virtual void analyse(SemanticAnalyser &analyser) = 0;
-  virtual llvm::Value *codegen(IRGenerator &irGen) = 0;
+  virtual custom_ir::Value *codegen(custom_ir::IRGenerator &irGen) = 0;
 };
 
 class ExpressionStmt : public Statement {
@@ -42,7 +43,7 @@ public:
 
   explicit ExpressionStmt(std::unique_ptr<Expr> expr);
   void analyse(SemanticAnalyser &analyser) override;
-  llvm::Value *codegen(IRGenerator &irGen) override;
+  custom_ir::Value *codegen(custom_ir::IRGenerator &irGen) override;
 };
 
 class Expr : public ASTNode {
@@ -50,8 +51,8 @@ public:
   Type *dataType;
   virtual ~Expr() = default;
   virtual Type *analyse(SemanticAnalyser &analyser) = 0;
-  virtual llvm::Value *codegen(IRGenerator &irGen) = 0;
-  virtual llvm::Value *codegenLValue(IRGenerator &irGen) {
+  virtual custom_ir::Value *codegen(custom_ir::IRGenerator &irGen) = 0;
+  virtual custom_ir::Value *codegenLValue(custom_ir::IRGenerator &irGen) {
     throw std::runtime_error("LValue codegen not allowed");
   };
 
@@ -68,7 +69,7 @@ public:
              std::unique_ptr<Expr> rhs);
 
   Type *analyse(SemanticAnalyser &analyser) override;
-  llvm::Value *codegen(IRGenerator &irGen) override;
+  custom_ir::Value *codegen(custom_ir::IRGenerator &irGen) override;
 };
 
 class LiteralExpr : public Expr {
@@ -77,7 +78,7 @@ public:
 
   explicit LiteralExpr(const std::string &val, Type *dataType);
   Type *analyse(SemanticAnalyser &analyser) override;
-  llvm::Value *codegen(IRGenerator &irGen) override;
+  custom_ir::Value *codegen(custom_ir::IRGenerator &irGen) override;
 };
 
 class CastExpr : public Expr {
@@ -86,7 +87,7 @@ public:
 
   explicit CastExpr(std::unique_ptr<Expr> expr, Type *dataType);
   Type *analyse(SemanticAnalyser &analyser) override;
-  llvm::Value *codegen(IRGenerator &irGen) override;
+  custom_ir::Value *codegen(custom_ir::IRGenerator &irGen) override;
 };
 
 class VariableExpr : public Expr {
@@ -95,8 +96,8 @@ public:
 
   explicit VariableExpr(const std::string &n);
   Type *analyse(SemanticAnalyser &analyser) override;
-  llvm::Value *codegen(IRGenerator &irGen) override;
-  llvm::Value *codegenLValue(IRGenerator &irGen) override;
+  custom_ir::Value *codegen(custom_ir::IRGenerator &irGen) override;
+  custom_ir::Value *codegenLValue(custom_ir::IRGenerator &irGen) override;
   bool isLValue() override;
 };
 
@@ -108,7 +109,7 @@ public:
   CallExpr(std::unique_ptr<Expr> callee,
            std::vector<std::unique_ptr<Expr>> args);
   Type *analyse(SemanticAnalyser &analyser) override;
-  llvm::Value *codegen(IRGenerator &irGen) override;
+  custom_ir::Value *codegen(custom_ir::IRGenerator &irGen) override;
 };
 
 class UnaryExpr : public Expr {
@@ -118,8 +119,8 @@ public:
 
   UnaryExpr(TOKEN_TYPE op, std::unique_ptr<Expr> operand);
   Type *analyse(SemanticAnalyser &analyser) override;
-  llvm::Value *codegen(IRGenerator &irGen) override;
-  llvm::Value *codegenLValue(IRGenerator &irGen) override;
+  custom_ir::Value *codegen(custom_ir::IRGenerator &irGen) override;
+  custom_ir::Value *codegenLValue(custom_ir::IRGenerator &irGen) override;
   bool isLValue() override;
 };
 
@@ -127,7 +128,7 @@ class SizeofExpr : public Expr {
 public:
   SizeofExpr(Type *);
   Type *analyse(SemanticAnalyser &analyser) override;
-  llvm::Value *codegen(IRGenerator &irGen) override;
+  custom_ir::Value *codegen(custom_ir::IRGenerator &irGen) override;
 };
 
 class DeclarationStmt : public Statement {
@@ -140,7 +141,7 @@ public:
                   std::unique_ptr<Expr> expr);
 
   void analyse(SemanticAnalyser &analyser) override;
-  llvm::Value *codegen(IRGenerator &irGen) override;
+  custom_ir::Value *codegen(custom_ir::IRGenerator &irGen) override;
 };
 
 class BlockStmt : public Statement {
@@ -150,7 +151,7 @@ public:
   BlockStmt(std::vector<std::unique_ptr<Statement>> body);
 
   void analyse(SemanticAnalyser &analyser) override;
-  llvm::Value *codegen(IRGenerator &irGen) override;
+  custom_ir::Value *codegen(custom_ir::IRGenerator &irGen) override;
 };
 
 class FunctionStmt : public Statement {
@@ -164,7 +165,7 @@ public:
                std::vector<std::pair<std::string, Type *>> args);
 
   void analyse(SemanticAnalyser &analyser) override;
-  llvm::Value *codegen(IRGenerator &irGen) override;
+  custom_ir::Value *codegen(custom_ir::IRGenerator &irGen) override;
 };
 
 class ReturnStmt : public Statement {
@@ -173,7 +174,7 @@ public:
 
   ReturnStmt(std::unique_ptr<Expr> expr);
   void analyse(SemanticAnalyser &analyser) override;
-  llvm::Value *codegen(IRGenerator &irGen) override;
+  custom_ir::Value *codegen(custom_ir::IRGenerator &irGen) override;
 };
 
 class IfStmt : public Statement {
@@ -185,7 +186,7 @@ public:
   IfStmt(std::unique_ptr<Expr> condition, std::unique_ptr<Statement> thenBranch,
          std::unique_ptr<Statement> elseBranch);
   void analyse(SemanticAnalyser &analyser) override;
-  llvm::Value *codegen(IRGenerator &irGen) override;
+  custom_ir::Value *codegen(custom_ir::IRGenerator &irGen) override;
 };
 
 class WhileStmt : public Statement {
@@ -196,21 +197,21 @@ public:
   WhileStmt(std::unique_ptr<Expr> condition,
             std::unique_ptr<Statement> thenBranch);
   void analyse(SemanticAnalyser &analyser) override;
-  llvm::Value *codegen(IRGenerator &irGen) override;
+  custom_ir::Value *codegen(custom_ir::IRGenerator &irGen) override;
 };
 
 class BreakStmt : public Statement {
 public:
   BreakStmt() {}
   void analyse(SemanticAnalyser &analyser) override;
-  llvm::Value *codegen(IRGenerator &irGen) override;
+  custom_ir::Value *codegen(custom_ir::IRGenerator &irGen) override;
 };
 
 class ContinueStmt : public Statement {
 public:
   ContinueStmt() {}
   void analyse(SemanticAnalyser &analyser) override;
-  llvm::Value *codegen(IRGenerator &irGen) override;
+  custom_ir::Value *codegen(custom_ir::IRGenerator &irGen) override;
 };
 
 class GoStmt : public Statement {
@@ -220,5 +221,5 @@ public:
 
   GoStmt(std::string callee, std::vector<std::unique_ptr<Expr>> args);
   void analyse(SemanticAnalyser &analyser) override;
-  llvm::Value *codegen(IRGenerator &irGen) override;
+  custom_ir::Value *codegen(custom_ir::IRGenerator &irGen) override;
 };

@@ -1,3 +1,4 @@
+#include <CustomIRGenerator.hpp>
 #include <IRGenerator.hpp>
 #include <Lexer.hpp>
 #include <Parser.hpp>
@@ -26,9 +27,11 @@ int main(int argc, char **argv) {
   Lexer lexer(input);
   Parser parser(lexer);
   SemanticAnalyser semanticAnalyser(parser);
-  IRGenerator irGen(semanticAnalyser);
-  irGen.optimizeModule();
-  irGen.writeIRToFile(argv[2]);
-  std::cout << "IR written to the output.ll\n";
+  // IRGenerator irGen(semanticAnalyser);
+  // irGen.optimizeModule();
+  // irGen.writeIRToFile(argv[2]);
+  // std::cout << "IR written to the output.ll\n";
+  custom_ir::IRGenerator customIRGenerator(semanticAnalyser);
+
   return 0;
 }
