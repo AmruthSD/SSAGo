@@ -11,6 +11,24 @@ enum class Opcode {
   Mul,
   Div,
 
+  FAdd,
+  FSub,
+  FMul,
+  FDiv,
+
+  ICmpEQ,
+  ICmpNE,
+  ICmpLT,
+  ICmpGT,
+
+  FCmpEQ,
+  FCmpNE,
+  FCmpLT,
+  FCmpGT,
+
+  And,
+  Or,
+
   Load,
   Store,
 
@@ -20,17 +38,28 @@ enum class Opcode {
   Call,
   Return,
 
+  Cast_INT,
+  Cast_FLOAT,
+  Bit_Cast,
+
+  Global_Dec,
+  Alloca,
+
   Phi
 };
 
 class Value {
 public:
+  Type *dataType;
+  std::string value;
+  Value(Type *dataType, std::string value) : dataType(dataType), value(value) {}
+
   virtual ~Value() = default;
 };
 
 class Constant : public Value {
 public:
-  int value;
+  Constant(Type *dataType, const std::string &value) : Value(dataType, value) {}
 };
 
 class Argument : public Value {
@@ -44,20 +73,23 @@ public:
 
   std::vector<Value *> operands;
 
-  BasicBlockIR *parent;
+  Instruction(Opcode op, std::vector<Value *> operands, std::string value,
+              Type *dataType)
+      : Value(dataType, value), opcode(op), operands(operands) {}
 };
 
 class BinaryInstruction : public Instruction {
 public:
-  Value *lhs;
-  Value *rhs;
+  BinaryInstruction(Opcode op, Value *l, Value *r, std::string value,
+                    Type *dataType)
+      : Instruction(op, {l, r}, value, dataType) {}
 };
 
 class BasicBlockIR {
 public:
   std::string name;
 
-  std::vector<std::unique_ptr<Instruction>> instructions;
+  std::vector<Instruction *> instructions;
 };
 
 class FunctionIR {
