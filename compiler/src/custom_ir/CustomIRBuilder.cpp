@@ -5,6 +5,12 @@ void custom_ir::IRBuilder::setInsertPoint(BasicBlockIR *block) {
   insertPoint = block;
 }
 
+void custom_ir::IRBuilder::ClearInsertionPoint() { insertPoint = nullptr; }
+
+custom_ir::BasicBlockIR *custom_ir::IRBuilder::GetInsertBlock() {
+  return insertPoint;
+}
+
 custom_ir::Instruction *
 custom_ir::IRBuilder::insert(custom_ir::Instruction *inst) {
   if (!insertPoint) {
@@ -88,6 +94,56 @@ custom_ir::Value *custom_ir::IRBuilder::CreateAlloca(std::string name,
   std::vector<custom_ir::Value *> operands{};
   custom_ir::Instruction *inst =
       new Instruction(Opcode::Alloca, operands, name, type);
+
+  return insert(inst);
+}
+
+custom_ir::Value *custom_ir::IRBuilder::CreateRet(Value *val) {
+  std::vector<custom_ir::Value *> operands{val};
+  custom_ir::Instruction *inst =
+      new Instruction(Opcode::Return, operands, val->value, val->dataType);
+
+  return insert(inst);
+}
+
+custom_ir::Value *custom_ir::IRBuilder::CreateCall(Function *func,
+                                                   std::string callName,
+                                                   std::vector<Value *> args) {
+  std::vector<custom_ir::Value *> operands{args};
+  operands.push_back(func);
+  custom_ir::Instruction *inst =
+      new Instruction(Opcode::Call, operands, func->name, func->functionType);
+
+  return insert(inst);
+}
+
+custom_ir::Value *custom_ir::IRBuilder::CreateCondBr(Value *condValue,
+                                                     BasicBlockIR *thenBB,
+                                                     BasicBlockIR *elseBB) {
+  std::vector<custom_ir::Value *> operands{condValue, thenBB, elseBB};
+  custom_ir::Instruction *inst =
+      new Instruction(Opcode::CondBranch, operands, "condBranch",
+                      new Type{DATA_TYPE::DATATYPE_VOID, nullptr});
+
+  return insert(inst);
+}
+
+custom_ir::Value *custom_ir::IRBuilder::CreateBr(BasicBlockIR *laterBB) {
+  std::vector<custom_ir::Value *> operands{laterBB};
+  custom_ir::Instruction *inst =
+      new Instruction(Opcode::Branch, operands, "branch",
+                      new Type{DATA_TYPE::DATATYPE_VOID, nullptr});
+
+  return insert(inst);
+}
+
+custom_ir::Value *
+custom_ir::IRBuilder::CreateGoCall(Function *func, std::string callName,
+                                   std::vector<Value *> args) {
+  std::vector<custom_ir::Value *> operands{args};
+  operands.push_back(func);
+  custom_ir::Instruction *inst =
+      new Instruction(Opcode::GoCall, operands, func->name, func->functionType);
 
   return insert(inst);
 }

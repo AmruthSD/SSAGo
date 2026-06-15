@@ -33,8 +33,10 @@ enum class Opcode {
   Store,
 
   Jump,
+  CondBranch,
   Branch,
 
+  GoCall,
   Call,
   Return,
 
@@ -48,6 +50,8 @@ enum class Opcode {
   Phi
 };
 
+class Function;
+
 class Value {
 public:
   Type *dataType;
@@ -60,11 +64,6 @@ public:
 class Constant : public Value {
 public:
   Constant(Type *dataType, const std::string &value) : Value(dataType, value) {}
-};
-
-class Argument : public Value {
-public:
-  std::string name;
 };
 
 class Instruction : public Value {
@@ -85,25 +84,34 @@ public:
       : Instruction(op, {l, r}, value, dataType) {}
 };
 
-class BasicBlockIR {
+class BasicBlockIR : public Value {
 public:
   std::string name;
+  Function *parent;
 
   std::vector<Instruction *> instructions;
+
+  BasicBlockIR(std::string name, Function *func)
+      : Value(func->functionType, name), parent(func), name(name) {}
 };
 
-class FunctionIR {
+class Function : public Value {
 public:
   std::string name;
+  Type *functionType;
 
-  std::vector<std::unique_ptr<Argument>> args;
+  std::vector<Value *> args;
 
-  std::vector<std::unique_ptr<BasicBlockIR>> blocks;
+  std::vector<BasicBlockIR *> blocks;
+
+  Function(std::string name, Type *functionType, std::vector<Value *> args)
+      : Value(functionType, name), name(name), args(args),
+        functionType(functionType) {}
 };
 
 class ModuleIR {
 public:
-  std::vector<std::unique_ptr<FunctionIR>> functions;
+  std::map<std::string, Function *> functions;
 };
 
 }; // namespace custom_ir

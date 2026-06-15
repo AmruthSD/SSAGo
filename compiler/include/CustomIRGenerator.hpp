@@ -11,8 +11,16 @@ namespace custom_ir {
 
 class IRGenerator {
   ModuleIR *module;
+  std::map<DATA_TYPE, int> sizeOfTypes = {
+      {DATA_TYPE::DATATYPE_INT, 4},
+      {DATA_TYPE::DATATYPE_FLOAT, 8},
+      {DATA_TYPE::DATATYPE_POINTER, 8},
+  };
   SemanticAnalyser &semanticAnalyser;
   IRBuilder builder;
+
+  std::vector<llvm::BasicBlockIR *> breakTargets;
+  std::vector<llvm::BasicBlockIR *> continueTargets;
 
   std::vector<std::unordered_map<std::string, custom_ir::Value *>> namedValues;
 
