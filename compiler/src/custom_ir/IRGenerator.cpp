@@ -1,4 +1,5 @@
 #include <CustomIRGenerator.hpp>
+#include <DominanceAnalysis.hpp>
 
 custom_ir::IRGenerator::IRGenerator(SemanticAnalyser &semanticAnalyser,
                                     IRBuilder &irBuilder, IRPrinter &IRPrinter)
@@ -9,6 +10,8 @@ custom_ir::IRGenerator::IRGenerator(SemanticAnalyser &semanticAnalyser,
   semanticAnalyser.ast.get()->codegen(*this);
   std::cout << "Codegeneration is done" << std::endl;
   printer.print(module);
+  DominatorAnalysis *domAnalyser = new DominatorAnalysis(module);
+  domAnalyser->run();
 }
 
 custom_ir::Value *custom_ir::IRGenerator::generateProgram(Program *prog) {
@@ -216,7 +219,7 @@ custom_ir::Value *custom_ir::IRGenerator::generateVariable(VariableExpr *expr) {
     return nullptr;
 
   Type *elementType = ptr->dataType->pointee;
-  return builder.CreateLoad(elementType, ptr, expr->name + "_val");
+  return builder.CreateLoad(elementType, ptr, expr->name);
 }
 
 custom_ir::Value *
