@@ -14,6 +14,8 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     "compiler/src/*.cpp"
     "compiler/src/**/*.cpp"
 )
+list(FILTER SOURCES EXCLUDE REGEX "compiler/src/intermidiate_representation/.*")
+
 add_executable(compiler ${SOURCES})
 target_include_directories(compiler PUBLIC compiler/include)
 llvm_map_components_to_libnames(LLVM_LIBS

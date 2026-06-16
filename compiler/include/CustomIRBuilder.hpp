@@ -24,6 +24,8 @@ public:
   Value *CreateAlloca(std::string, Type *);
   Value *CreateRet(Value *);
   Value *CreateCall(Function *, std::string, std::vector<Value *> args);
+  Value *CreateCallExternal(std::string, Type *, std::string,
+                            std::vector<Value *> args);
   Value *CreateBr(BasicBlockIR *laterBB);
   Value *CreateCondBr(Value *condValue, BasicBlockIR *thenBB,
                       BasicBlockIR *elseBB);

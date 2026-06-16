@@ -1,0 +1,29 @@
+function hello(abc int) int{
+    int y = abc+50;
+    return y;
+}
+
+int x = 0;
+
+function par(abc int, wg WaitGrp)int{
+    printf("%d\n",abc);
+    waitgroup_done(wg);
+}
+
+function main()int{
+    int z = 2;
+        int *y = malloc(sizeof(int));
+        *y = 3;
+    WaitGrp wg = waitgroup_new();
+    waitgroup_add(wg,1);
+    go par(20,wg);
+    waitgroup_wait(wg);
+    while(x<10000){
+        printf("Out = %d",*y);
+        if(x==1){
+            x = x+2;
+            continue;
+        }else if(x==8) break;
+        x=x+1;
+    }
+}

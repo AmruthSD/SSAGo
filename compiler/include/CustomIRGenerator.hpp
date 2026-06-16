@@ -3,11 +3,13 @@
 #include <AST.hpp>
 #include <CustomIR.hpp>
 #include <CustomIRBuilder.hpp>
+#include <CustomIRPrinter.hpp>
 #include <SemanticAnalyser.hpp>
 #include <unordered_map>
 #include <vector>
 
 namespace custom_ir {
+class IRBuilder;
 
 class IRGenerator {
   ModuleIR *module;
@@ -17,10 +19,11 @@ class IRGenerator {
       {DATA_TYPE::DATATYPE_POINTER, 8},
   };
   SemanticAnalyser &semanticAnalyser;
-  IRBuilder builder;
+  IRBuilder &builder;
+  IRPrinter &printer;
 
-  std::vector<llvm::BasicBlockIR *> breakTargets;
-  std::vector<llvm::BasicBlockIR *> continueTargets;
+  std::vector<BasicBlockIR *> breakTargets;
+  std::vector<BasicBlockIR *> continueTargets;
 
   std::vector<std::unordered_map<std::string, custom_ir::Value *>> namedValues;
 
@@ -60,8 +63,18 @@ class IRGenerator {
 
       {TOKEN_TYPE::AND, "andtmp"},      {TOKEN_TYPE::OR, "ortmp"}};
 
+  const std::map<TOKEN_TYPE, std::string> floatTempNameMap = {
+      {TOKEN_TYPE::PLUS, "faddtmp"},     {TOKEN_TYPE::MINUS, "fsubtmp"},
+      {TOKEN_TYPE::ASTERISK, "fmultmp"}, {TOKEN_TYPE::SLASH, "fdivtmp"},
+
+      {TOKEN_TYPE::EQUAL, "feqtmp"},     {TOKEN_TYPE::NOT_EQUAL, "fnetmp"},
+      {TOKEN_TYPE::LESS, "flttmp"},      {TOKEN_TYPE::GREATER, "fgttmp"},
+
+      {TOKEN_TYPE::AND, "fandtmp"},      {TOKEN_TYPE::OR, "fortmp"}};
+
 public:
-  IRGenerator(SemanticAnalyser &semanticAnalyser);
+  IRGenerator(SemanticAnalyser &semanticAnalyser, IRBuilder &irBuilder,
+              IRPrinter &IRPrinter);
 
   Value *generateProgram(Program *);
   Value *getVariablePointer(std::string &name);

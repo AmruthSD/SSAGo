@@ -47,9 +47,9 @@ custom_ir::Value *custom_ir::IRBuilder::CreateBinary(custom_ir::Opcode op,
 custom_ir::Value *custom_ir::IRBuilder::CreateStore(custom_ir::Value *var,
                                                     custom_ir::Value *ptr) {
 
-  std::vector<custom_ir::Value *> operands{var, ptr};
+  std::vector<custom_ir::Value *> operands{ptr, var};
   custom_ir::Instruction *inst =
-      new Instruction(Opcode::Store, operands, var->value, var->dataType);
+      new Instruction(Opcode::Store, operands, ptr->value, ptr->dataType);
 
   return insert(inst);
 }
@@ -83,17 +83,19 @@ custom_ir::Value *custom_ir::IRBuilder::CreateGlobalVariable(std::string name,
                                                              Type *type,
                                                              Value *val) {
   std::vector<custom_ir::Value *> operands{val};
+  Type *newType = new Type{DATA_TYPE::DATATYPE_POINTER, type};
   custom_ir::Instruction *inst =
-      new Instruction(Opcode::Global_Dec, operands, name, type);
+      new Instruction(Opcode::Global_Dec, operands, name, newType);
 
-  return insert(inst);
+  return inst;
 }
 
 custom_ir::Value *custom_ir::IRBuilder::CreateAlloca(std::string name,
                                                      Type *type) {
   std::vector<custom_ir::Value *> operands{};
+  Type *newType = new Type{DATA_TYPE::DATATYPE_POINTER, type};
   custom_ir::Instruction *inst =
-      new Instruction(Opcode::Alloca, operands, name, type);
+      new Instruction(Opcode::Alloca, operands, name, newType);
 
   return insert(inst);
 }
@@ -117,6 +119,18 @@ custom_ir::Value *custom_ir::IRBuilder::CreateCall(Function *func,
   return insert(inst);
 }
 
+custom_ir::Value *
+custom_ir::IRBuilder::CreateCallExternal(std::string name, Type *type,
+                                         std::string callName,
+                                         std::vector<Value *> args) {
+  std::vector<custom_ir::Value *> operands{args};
+  operands.push_back(new Value(type, name));
+  custom_ir::Instruction *inst =
+      new Instruction(Opcode::CallExternal, operands, name, type);
+
+  return insert(inst);
+}
+
 custom_ir::Value *custom_ir::IRBuilder::CreateCondBr(Value *condValue,
                                                      BasicBlockIR *thenBB,
                                                      BasicBlockIR *elseBB) {
@@ -124,6 +138,13 @@ custom_ir::Value *custom_ir::IRBuilder::CreateCondBr(Value *condValue,
   custom_ir::Instruction *inst =
       new Instruction(Opcode::CondBranch, operands, "condBranch",
                       new Type{DATA_TYPE::DATATYPE_VOID, nullptr});
+
+  BasicBlockIR *currentBB = insertPoint;
+  currentBB->successor.push_back(thenBB);
+  currentBB->successor.push_back(elseBB);
+
+  thenBB->predecessor.push_back(currentBB);
+  elseBB->predecessor.push_back(currentBB);
 
   return insert(inst);
 }
@@ -133,6 +154,11 @@ custom_ir::Value *custom_ir::IRBuilder::CreateBr(BasicBlockIR *laterBB) {
   custom_ir::Instruction *inst =
       new Instruction(Opcode::Branch, operands, "branch",
                       new Type{DATA_TYPE::DATATYPE_VOID, nullptr});
+
+  BasicBlockIR *currentBB = insertPoint;
+  currentBB->successor.push_back(laterBB);
+
+  laterBB->predecessor.push_back(currentBB);
 
   return insert(inst);
 }

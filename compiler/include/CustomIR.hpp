@@ -1,10 +1,14 @@
 #pragma once
 
+#include <Type.hpp>
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
 namespace custom_ir {
+class IRGenerator;
+
 enum class Opcode {
   Add,
   Sub,
@@ -38,6 +42,7 @@ enum class Opcode {
 
   GoCall,
   Call,
+  CallExternal,
   Return,
 
   Cast_INT,
@@ -51,6 +56,7 @@ enum class Opcode {
 };
 
 class Function;
+class BasicBlockIR;
 
 class Value {
 public:
@@ -84,17 +90,6 @@ public:
       : Instruction(op, {l, r}, value, dataType) {}
 };
 
-class BasicBlockIR : public Value {
-public:
-  std::string name;
-  Function *parent;
-
-  std::vector<Instruction *> instructions;
-
-  BasicBlockIR(std::string name, Function *func)
-      : Value(func->functionType, name), parent(func), name(name) {}
-};
-
 class Function : public Value {
 public:
   std::string name;
@@ -107,6 +102,21 @@ public:
   Function(std::string name, Type *functionType, std::vector<Value *> args)
       : Value(functionType, name), name(name), args(args),
         functionType(functionType) {}
+};
+
+class BasicBlockIR : public Value {
+public:
+  std::string name;
+  Function *parent;
+
+  std::vector<BasicBlockIR *> predecessor, successor;
+
+  std::vector<Instruction *> instructions;
+
+  BasicBlockIR(std::string name, Function *func)
+      : Value(func->functionType, name), parent(func), name(name) {
+    parent->blocks.push_back(this);
+  }
 };
 
 class ModuleIR {

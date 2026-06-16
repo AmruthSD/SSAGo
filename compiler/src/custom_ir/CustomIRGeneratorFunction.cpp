@@ -31,7 +31,7 @@ custom_ir::Value *custom_ir::IRGenerator::generateFunction(FunctionStmt *func) {
 
     custom_ir::Value *alloca = builder.CreateAlloca(arg->value, arg->dataType);
 
-    // builder.CreateStore(&arg, alloca);
+    builder.CreateStore(arg, alloca);
     namedValues.back()[arg->value] = alloca;
 
     idx++;
@@ -90,7 +90,7 @@ custom_ir::Value *custom_ir::IRGenerator::generateReturn(ReturnStmt *stmt) {
   if (!retValue)
     return nullptr;
 
-  if (areTypesEqual(retValue->dataType, returnType)) {
+  if (!areTypesEqual(retValue->dataType, returnType)) {
     if (returnType->base == DATA_TYPE::DATATYPE_FLOAT &&
         retValue->dataType->base == DATA_TYPE::DATATYPE_INT) {
       retValue =
@@ -116,15 +116,6 @@ custom_ir::Value *custom_ir::IRGenerator::generateFunctionCall(CallExpr *expr) {
 
   std::string functionName = var->name;
 
-  if (external_functions.find(functionName) == external_functions.end())
-    functionName = "__user_" + functionName;
-  else
-    return nullptr;
-
-  custom_ir::Function *function = module->functions[functionName];
-  if (!function)
-    throw std::runtime_error("LLVM function not found: " + functionName);
-
   std::vector<custom_ir::Value *> args;
   args.reserve(expr->arguments.size());
 
@@ -135,6 +126,18 @@ custom_ir::Value *custom_ir::IRGenerator::generateFunctionCall(CallExpr *expr) {
                                functionName);
     args.push_back(argVal);
   }
+
+  if (external_functions.find(functionName) == external_functions.end())
+    functionName = "__user_" + functionName;
+  else {
+    return builder.CreateCallExternal(
+        functionName, new Type{DATA_TYPE::DATATYPE_VOID, nullptr},
+        functionName + "_call", args);
+  }
+
+  custom_ir::Function *function = module->functions[functionName];
+  if (!function)
+    throw std::runtime_error("LLVM function not found: " + functionName);
 
   Type *ft = function->functionType;
   std::string callName =

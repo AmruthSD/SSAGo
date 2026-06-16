@@ -1,10 +1,14 @@
 #include <CustomIRGenerator.hpp>
 
-custom_ir::IRGenerator::IRGenerator(SemanticAnalyser &semanticAnalyser)
-    : semanticAnalyser(semanticAnalyser) {
+custom_ir::IRGenerator::IRGenerator(SemanticAnalyser &semanticAnalyser,
+                                    IRBuilder &irBuilder, IRPrinter &IRPrinter)
+    : semanticAnalyser(semanticAnalyser), builder(irBuilder),
+      printer(IRPrinter) {
   module = new ModuleIR();
   namedValues.emplace_back();
   semanticAnalyser.ast.get()->codegen(*this);
+  std::cout << "Codegeneration is done" << std::endl;
+  printer.print(module);
 }
 
 custom_ir::Value *custom_ir::IRGenerator::generateProgram(Program *prog) {
@@ -37,7 +41,6 @@ custom_ir::Value *custom_ir::IRGenerator::generateLiteral(LiteralExpr *expr) {
 }
 
 custom_ir::Value *custom_ir::IRGenerator::generateCast(CastExpr *expr) {
-
   custom_ir::Value *val = expr->expr->codegen(*this);
   if (!val)
     return nullptr;
@@ -63,7 +66,6 @@ custom_ir::Value *custom_ir::IRGenerator::generateCast(CastExpr *expr) {
 custom_ir::Value *custom_ir::IRGenerator::generateBinary(BinaryExpr *expr) {
 
   if (expr->op == TOKEN_TYPE::ASSIGN) {
-
     if (!expr->left->isLValue())
       throw std::runtime_error("Left side of assignment is not assignable");
 
@@ -72,7 +74,8 @@ custom_ir::Value *custom_ir::IRGenerator::generateBinary(BinaryExpr *expr) {
     if (!value)
       return nullptr;
 
-    Type *ptrElemTy = ptr->dataType;
+    Type *ptrElemTy = ptr->dataType->pointee;
+
     if (!areTypesEqual(value->dataType, ptrElemTy)) {
 
       if (value->dataType->pointee != nullptr &&
@@ -98,7 +101,6 @@ custom_ir::Value *custom_ir::IRGenerator::generateBinary(BinaryExpr *expr) {
     builder.CreateStore(value, ptr);
     return value;
   }
-
   custom_ir::Value *L = expr->left->codegen(*this);
   custom_ir::Value *R = expr->right->codegen(*this);
 
@@ -119,7 +121,7 @@ custom_ir::Value *custom_ir::IRGenerator::generateBinary(BinaryExpr *expr) {
     case TOKEN_TYPE::LESS:
     case TOKEN_TYPE::GREATER: {
       Opcode op = floatOpcodeMap.at(expr->op);
-      std::string tempName = tempNameMap.at(expr->op);
+      std::string tempName = floatTempNameMap.at(expr->op);
       return builder.CreateBinary(op, L, R, tempName);
     }
     default:
@@ -138,7 +140,7 @@ custom_ir::Value *custom_ir::IRGenerator::generateBinary(BinaryExpr *expr) {
   case TOKEN_TYPE::NOT_EQUAL:
   case TOKEN_TYPE::LESS:
   case TOKEN_TYPE::GREATER: {
-    Opcode op = floatOpcodeMap.at(expr->op);
+    Opcode op = intOpcodeMap.at(expr->op);
     std::string tempName = tempNameMap.at(expr->op);
     return builder.CreateBinary(op, L, R, tempName);
   }
@@ -149,7 +151,6 @@ custom_ir::Value *custom_ir::IRGenerator::generateBinary(BinaryExpr *expr) {
     L = builder.CreateBinary(Opcode::ICmpNE, L, zero, "lhsbool");
 
     R = builder.CreateBinary(Opcode::ICmpNE, R, zero, "rhsbool");
-
     return builder.CreateBinary(Opcode::And, L, R, "andtmp");
   }
 
@@ -159,7 +160,6 @@ custom_ir::Value *custom_ir::IRGenerator::generateBinary(BinaryExpr *expr) {
     L = builder.CreateBinary(Opcode::ICmpNE, L, zero, "lhsbool");
 
     R = builder.CreateBinary(Opcode::ICmpNE, R, zero, "rhsbool");
-
     return builder.CreateBinary(Opcode::Or, L, R, "ortmp");
   }
 
@@ -222,7 +222,6 @@ custom_ir::Value *custom_ir::IRGenerator::generateVariable(VariableExpr *expr) {
 custom_ir::Value *
 custom_ir::IRGenerator::generateVariableLValue(VariableExpr *expr) {
   custom_ir::Value *ptr = nullptr;
-
   for (auto it = namedValues.rbegin(); it != namedValues.rend(); ++it) {
     auto found = it->find(expr->name);
     if (found != it->end()) {
@@ -234,14 +233,12 @@ custom_ir::IRGenerator::generateVariableLValue(VariableExpr *expr) {
   if (!ptr) {
     throw std::runtime_error("Unknown variable: " + expr->name + "\n");
   }
-
   return ptr;
 }
 
 custom_ir::Value *
 custom_ir::IRGenerator::generateDeclaration(DeclarationStmt *stmt) {
   Type *varType = stmt->dataType;
-
   custom_ir::Value *initValue = nullptr;
 
   if (stmt->expr) {

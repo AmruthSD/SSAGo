@@ -1,7 +1,6 @@
 #include <CustomIRGenerator.hpp>
 
 custom_ir::Value *custom_ir::IRGenerator::generateIfElse(IfStmt *stmt) {
-
   custom_ir::Value *condValue = stmt->condition->codegen(*this);
 
   if (!condValue)
@@ -31,25 +30,25 @@ custom_ir::Value *custom_ir::IRGenerator::generateIfElse(IfStmt *stmt) {
 
   builder.setInsertPoint(thenBB);
   stmt->thenBranch->codegen(*this);
-  if (!(builder.GetInsertBlock()->instructions.back()->opcode ==
+  if (builder.GetInsertBlock()->instructions.size() == 0 ||
+      !(builder.GetInsertBlock()->instructions.back()->opcode ==
         Opcode::Branch))
     builder.CreateBr(mergeBB);
 
-  function->blocks.push_back(elseBB);
   builder.setInsertPoint(elseBB);
+
   if (stmt->elseBranch)
     stmt->elseBranch->codegen(*this);
-  if (!(builder.GetInsertBlock()->instructions.back()->opcode ==
+  if (builder.GetInsertBlock()->instructions.size() == 0 ||
+      !(builder.GetInsertBlock()->instructions.back()->opcode ==
         Opcode::Branch))
     builder.CreateBr(mergeBB);
-  function->blocks.push_back(mergeBB);
   builder.setInsertPoint(mergeBB);
 
   return nullptr;
 }
 
 custom_ir::Value *custom_ir::IRGenerator::generateWhile(WhileStmt *stmt) {
-
   custom_ir::Function *function = builder.GetInsertBlock()->parent;
 
   BasicBlockIR *condBB = new BasicBlockIR("while.cond", function);
@@ -80,7 +79,6 @@ custom_ir::Value *custom_ir::IRGenerator::generateWhile(WhileStmt *stmt) {
 
   builder.CreateCondBr(condValue, bodyBB, afterBB);
 
-  function->blocks.push_back(bodyBB);
   builder.setInsertPoint(bodyBB);
   breakTargets.push_back(afterBB);
   continueTargets.push_back(condBB);
@@ -91,14 +89,12 @@ custom_ir::Value *custom_ir::IRGenerator::generateWhile(WhileStmt *stmt) {
   breakTargets.pop_back();
   continueTargets.pop_back();
 
-  function->blocks.push_back(afterBB);
   builder.setInsertPoint(afterBB);
 
   return nullptr;
 }
 
 custom_ir::Value *custom_ir::IRGenerator::generateBreak(BreakStmt *stmt) {
-
   builder.CreateBr(breakTargets.back());
   custom_ir::BasicBlockIR *unreachable =
       new BasicBlockIR("after.break", builder.GetInsertBlock()->parent);
@@ -108,12 +104,10 @@ custom_ir::Value *custom_ir::IRGenerator::generateBreak(BreakStmt *stmt) {
 }
 
 custom_ir::Value *custom_ir::IRGenerator::generateContinue(ContinueStmt *stmt) {
-
   builder.CreateBr(continueTargets.back());
   custom_ir::BasicBlockIR *unreachable =
       new BasicBlockIR("after.continue", builder.GetInsertBlock()->parent);
 
   builder.setInsertPoint(unreachable);
-
   return nullptr;
 }

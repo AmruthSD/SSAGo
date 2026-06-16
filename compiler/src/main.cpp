@@ -1,5 +1,6 @@
+#include <CustomIRBuilder.hpp>
 #include <CustomIRGenerator.hpp>
-#include <IRGenerator.hpp>
+#include <CustomIRPrinter.hpp>
 #include <Lexer.hpp>
 #include <Parser.hpp>
 #include <SemanticAnalyser.hpp>
@@ -31,7 +32,9 @@ int main(int argc, char **argv) {
   // irGen.optimizeModule();
   // irGen.writeIRToFile(argv[2]);
   // std::cout << "IR written to the output.ll\n";
-  custom_ir::IRGenerator customIRGenerator(semanticAnalyser);
+  custom_ir::IRPrinter printer;
+  custom_ir::IRBuilder builder;
+  custom_ir::IRGenerator customIRGenerator(semanticAnalyser, builder, printer);
 
   return 0;
 }
