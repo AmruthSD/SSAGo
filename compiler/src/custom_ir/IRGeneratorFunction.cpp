@@ -39,18 +39,29 @@ custom_ir::Value *custom_ir::IRGenerator::generateFunction(FunctionStmt *func) {
 
   func->body.get()->codegen(*this);
 
-  //   for (auto &block : *function) {
-  //     if (!block.getTerminator()) {
-  //       llvm::IRBuilder<> tmpBuilder(&block);
-
-  //       if (function->getReturnType()->isVoidTy()) {
-  //         tmpBuilder.CreateRetVoid();
-  //       } else {
-  //         tmpBuilder.CreateRet(
-  //             llvm::Constant::getNullValue(function->getReturnType()));
-  //       }
-  //     }
-  //   }
+  for (auto &block : function->blocks) {
+    if (!block->hasTerminator()) {
+      builder.setInsertPoint(block);
+      if (function->dataType->base == DATA_TYPE::DATATYPE_VOID) {
+        builder.CreateRet(
+            new Value(new Type{DATA_TYPE::DATATYPE_VOID, nullptr}, ""));
+      } else {
+        Type *varType = function->dataType;
+        Value *initValue;
+        if (varType->pointee != nullptr) {
+          initValue = builder.CreateConstant(varType, "null");
+        } else if (varType->base == DATA_TYPE::DATATYPE_INT) {
+          initValue = builder.CreateConstant(varType, "0");
+        } else if (varType->base == DATA_TYPE::DATATYPE_FLOAT) {
+          initValue = builder.CreateConstant(varType, "0.0");
+        } else {
+          throw std::runtime_error("No default return or terminator in block" +
+                                   block->name);
+        }
+        builder.CreateRet(initValue);
+      }
+    }
+  }
 
   namedValues.pop_back();
 

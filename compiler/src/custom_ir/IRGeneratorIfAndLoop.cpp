@@ -30,19 +30,16 @@ custom_ir::Value *custom_ir::IRGenerator::generateIfElse(IfStmt *stmt) {
 
   builder.setInsertPoint(thenBB);
   stmt->thenBranch->codegen(*this);
-  if (builder.GetInsertBlock()->instructions.size() == 0 ||
-      !(builder.GetInsertBlock()->instructions.back()->opcode ==
-        Opcode::Branch))
+  if (!builder.GetInsertBlock()->hasTerminator())
     builder.CreateBr(mergeBB);
 
   builder.setInsertPoint(elseBB);
 
   if (stmt->elseBranch)
     stmt->elseBranch->codegen(*this);
-  if (builder.GetInsertBlock()->instructions.size() == 0 ||
-      !(builder.GetInsertBlock()->instructions.back()->opcode ==
-        Opcode::Branch))
+  if (!builder.GetInsertBlock()->hasTerminator())
     builder.CreateBr(mergeBB);
+
   builder.setInsertPoint(mergeBB);
 
   return nullptr;
@@ -88,6 +85,9 @@ custom_ir::Value *custom_ir::IRGenerator::generateWhile(WhileStmt *stmt) {
 
   breakTargets.pop_back();
   continueTargets.pop_back();
+
+  if (!builder.GetInsertBlock()->hasTerminator())
+    builder.CreateBr(afterBB);
 
   builder.setInsertPoint(afterBB);
 

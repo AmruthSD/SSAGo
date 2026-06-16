@@ -1,5 +1,6 @@
 #include <CustomIR.hpp>
 #include <DominanceAnalysis.hpp>
+#include <iostream>
 
 namespace custom_ir {
 DominatorAnalysis::DominatorAnalysis(ModuleIR *module) : module(module) {}
@@ -11,15 +12,19 @@ DominatorInfo &DominatorAnalysis::getInfo(BasicBlockIR *block) {
 void DominatorAnalysis::run() {
   for (auto &[_, func] : module->functions)
     computeDominators(func);
+  std::cout << "Dominators for each done" << std::endl;
 
   for (auto &[_, func] : module->functions)
     computeImmediateDominators(func);
+  std::cout << "Intermidiate Dominators for each done" << std::endl;
 
   for (auto &[_, func] : module->functions)
     buildDominatorTree(func);
+  std::cout << "Dominator Trees for each done" << std::endl;
 
   for (auto &[_, func] : module->functions)
     computeDominanceFrontiers(func);
+  std::cout << "Dominators Frontiers for each done" << std::endl;
 }
 
 std::unordered_set<BasicBlockIR *>
@@ -42,6 +47,8 @@ void DominatorAnalysis::computeDominators(Function *func) {
   BasicBlockIR *entry = blocks[0];
 
   for (auto *block : blocks) {
+    DominatorInfo newInfo;
+    info[block] = newInfo;
     if (block == entry) {
       info[block].dominators = {entry};
     } else {
@@ -56,10 +63,10 @@ void DominatorAnalysis::computeDominators(Function *func) {
     changed = false;
 
     for (auto *block : blocks) {
-
       if (block == entry)
         continue;
-
+      if (block->predecessor.size() == 0)
+        continue;
       auto newDom = info[block->predecessor[0]].dominators;
       for (size_t i = 1; i < block->predecessor.size(); i++) {
         newDom = intersect(newDom, info[block->predecessor[i]].dominators);

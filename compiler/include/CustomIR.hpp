@@ -117,6 +117,16 @@ public:
       : Value(func->functionType, name), parent(func), name(name) {
     parent->blocks.push_back(this);
   }
+
+  bool hasTerminator() {
+    if (!this->instructions.size() == 0) {
+      Opcode op = this->instructions.back()->opcode;
+      if (op == Opcode::Branch || op == Opcode::CondBranch ||
+          op == Opcode::Return)
+        return 1;
+    }
+    return 0;
+  }
 };
 
 class ModuleIR {
