@@ -25,6 +25,7 @@ class IRGenerator {
   std::vector<BasicBlockIR *> breakTargets;
   std::vector<BasicBlockIR *> continueTargets;
 
+  int variable_id = 0;
   std::vector<std::unordered_map<std::string, custom_ir::Value *>> namedValues;
 
   const std::map<TOKEN_TYPE, Opcode> intOpcodeMap = {

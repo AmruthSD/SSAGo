@@ -55,12 +55,14 @@ custom_ir::Value *custom_ir::IRGenerator::generateCast(CastExpr *expr) {
   if (oldType == DATA_TYPE::DATATYPE_INT &&
       targetType == DATA_TYPE::DATATYPE_FLOAT) {
 
-    return builder.CreateCast(val, targetType, "intToFloatTemp");
+    return builder.CreateCast(
+        val, new TempValue(new Type{targetType, nullptr}, "intToFloatTemp"));
   }
   if (oldType == DATA_TYPE::DATATYPE_FLOAT &&
       targetType == DATA_TYPE::DATATYPE_INT) {
 
-    return builder.CreateCast(val, targetType, "floatToIntTemp");
+    return builder.CreateCast(
+        val, new TempValue(new Type{targetType, nullptr}, "floatToIntTemp"));
   }
 
   throw std::runtime_error("Unsupported cast");
@@ -100,12 +102,18 @@ custom_ir::Value *custom_ir::IRGenerator::generateBinary(BinaryExpr *expr) {
         throw std::runtime_error("Invalid type mismatch in assignment\n");
       }
     }
-
-    builder.CreateStore(value, ptr);
+    VariableValue *varValue = dynamic_cast<VariableValue *>(ptr);
+    if (varValue == nullptr)
+      throw std::runtime_error("assignment allowed only to a variable");
+    builder.CreateStore(varValue, value);
     return value;
   }
   custom_ir::Value *L = expr->left->codegen(*this);
   custom_ir::Value *R = expr->right->codegen(*this);
+
+  if (L->dataType->base == DATA_TYPE::DATATYPE_POINTER) {
+    std::cout << "Pointer on the left" << std::endl;
+  }
 
   if (!L || !R)
     return nullptr;
@@ -125,7 +133,8 @@ custom_ir::Value *custom_ir::IRGenerator::generateBinary(BinaryExpr *expr) {
     case TOKEN_TYPE::GREATER: {
       Opcode op = floatOpcodeMap.at(expr->op);
       std::string tempName = floatTempNameMap.at(expr->op);
-      return builder.CreateBinary(op, L, R, tempName);
+      return builder.CreateBinary(op, L, R,
+                                  new TempValue(L->dataType, tempName));
     }
     default:
       return nullptr;
@@ -145,25 +154,31 @@ custom_ir::Value *custom_ir::IRGenerator::generateBinary(BinaryExpr *expr) {
   case TOKEN_TYPE::GREATER: {
     Opcode op = intOpcodeMap.at(expr->op);
     std::string tempName = tempNameMap.at(expr->op);
-    return builder.CreateBinary(op, L, R, tempName);
+    return builder.CreateBinary(op, L, R, new TempValue(L->dataType, tempName));
   }
   // ===== Logical ops =====
   case TOKEN_TYPE::AND: {
     auto *zero = builder.CreateConstant(L->dataType, "0");
 
-    L = builder.CreateBinary(Opcode::ICmpNE, L, zero, "lhsbool");
+    L = builder.CreateBinary(Opcode::ICmpNE, L, zero,
+                             new TempValue(L->dataType, "lhsbool"));
 
-    R = builder.CreateBinary(Opcode::ICmpNE, R, zero, "rhsbool");
-    return builder.CreateBinary(Opcode::And, L, R, "andtmp");
+    R = builder.CreateBinary(Opcode::ICmpNE, R, zero,
+                             new TempValue(R->dataType, "rhsbool"));
+    return builder.CreateBinary(Opcode::And, L, R,
+                                new TempValue(L->dataType, "andtmp"));
   }
 
   case TOKEN_TYPE::OR: {
     auto *zero = builder.CreateConstant(L->dataType, "0");
 
-    L = builder.CreateBinary(Opcode::ICmpNE, L, zero, "lhsbool");
+    L = builder.CreateBinary(Opcode::ICmpNE, L, zero,
+                             new TempValue(L->dataType, "lhsbool"));
 
-    R = builder.CreateBinary(Opcode::ICmpNE, R, zero, "rhsbool");
-    return builder.CreateBinary(Opcode::Or, L, R, "ortmp");
+    R = builder.CreateBinary(Opcode::ICmpNE, R, zero,
+                             new TempValue(R->dataType, "rhsbool"));
+    return builder.CreateBinary(Opcode::Or, L, R,
+                                new TempValue(L->dataType, "ortmp"));
   }
 
   default:
@@ -181,7 +196,11 @@ custom_ir::Value *custom_ir::IRGenerator::generateUnaryExpr(UnaryExpr *expr) {
 
     Type *elementType = ptr->dataType->pointee;
 
-    return builder.CreateLoad(elementType, ptr, "deref_val");
+    VariableValue *varValue = dynamic_cast<VariableValue *>(ptr);
+    if (varValue == nullptr)
+      throw std::runtime_error("Load allowed only to a variable");
+    return builder.CreateLoad(varValue,
+                              new TempValue(elementType, "deref_val"));
   }
   case TOKEN_TYPE::AMPERSAND: {
     return expr->operand->codegenLValue(*this);
@@ -219,7 +238,12 @@ custom_ir::Value *custom_ir::IRGenerator::generateVariable(VariableExpr *expr) {
     return nullptr;
 
   Type *elementType = ptr->dataType->pointee;
-  return builder.CreateLoad(elementType, ptr, expr->name);
+  VariableValue *varValue = dynamic_cast<VariableValue *>(ptr);
+  if (varValue == nullptr)
+    throw std::runtime_error("Load allowed only to a variable");
+  return builder.CreateLoad(
+      varValue,
+      new VariableValue(elementType, varValue->value, varValue->variable_id));
 }
 
 custom_ir::Value *
@@ -243,7 +267,6 @@ custom_ir::Value *
 custom_ir::IRGenerator::generateDeclaration(DeclarationStmt *stmt) {
   Type *varType = stmt->dataType;
   custom_ir::Value *initValue = nullptr;
-
   if (stmt->expr) {
     initValue = stmt->expr->codegen(*this);
   } else {
@@ -265,20 +288,25 @@ custom_ir::IRGenerator::generateDeclaration(DeclarationStmt *stmt) {
     if (!constant) {
       throw std::runtime_error("Global initializer must be constant");
     }
+    VariableValue *varVal =
+        new VariableValue(new Type{DATA_TYPE::DATATYPE_POINTER, varType},
+                          stmt->identifier, variable_id++);
+    auto *global = builder.CreateGlobalVariable(varVal, constant);
 
-    auto *global =
-        builder.CreateGlobalVariable(stmt->identifier, varType, constant);
-
-    namedValues.back()[stmt->identifier] = global;
+    namedValues.back()[stmt->identifier] = varVal;
 
     return global;
   }
 
-  auto *alloca = builder.CreateAlloca(stmt->identifier, varType);
+  VariableValue *varValue =
+      new VariableValue(new Type{DATA_TYPE::DATATYPE_POINTER, varType},
+                        stmt->identifier, variable_id++);
 
-  builder.CreateStore(initValue, alloca);
+  auto *alloca = builder.CreateAlloca(varValue);
 
-  namedValues.back()[stmt->identifier] = alloca;
+  builder.CreateStore(varValue, initValue);
+
+  namedValues.back()[stmt->identifier] = varValue;
 
   return alloca;
 }

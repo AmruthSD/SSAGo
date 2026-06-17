@@ -7,16 +7,20 @@ custom_ir::Value *custom_ir::IRGenerator::generateIfElse(IfStmt *stmt) {
     throw std::runtime_error("Invalid condition in if");
 
   if (isNumeric(condValue->dataType)) {
+    Value *newRes =
+        new TempValue(new Type{DATA_TYPE::DATATYPE_INT, nullptr}, "ifcond");
     condValue = builder.CreateBinary(
         Opcode::ICmpNE, condValue,
         builder.CreateConstant(new Type{DATA_TYPE::DATATYPE_INT, nullptr}, "0"),
-        "ifcond");
+        newRes);
   } else if (condValue->dataType->base == DATA_TYPE::DATATYPE_FLOAT) {
+    Value *newRes =
+        new TempValue(new Type{DATA_TYPE::DATATYPE_FLOAT, nullptr}, "ifcond");
     condValue = builder.CreateBinary(
         Opcode::FCmpNE, condValue,
         builder.CreateConstant(new Type{DATA_TYPE::DATATYPE_FLOAT, nullptr},
                                "0.0"),
-        "ifcond");
+        newRes);
   } else {
     throw std::runtime_error("Unsupported condition type in if");
   }
@@ -60,16 +64,20 @@ custom_ir::Value *custom_ir::IRGenerator::generateWhile(WhileStmt *stmt) {
     throw std::runtime_error("Invalid condition in if");
 
   if (isNumeric(condValue->dataType)) {
+    Value *newRes =
+        new TempValue(new Type{DATA_TYPE::DATATYPE_INT, nullptr}, "ifcond");
     condValue = builder.CreateBinary(
         Opcode::ICmpNE, condValue,
         builder.CreateConstant(new Type{DATA_TYPE::DATATYPE_INT, nullptr}, "0"),
-        "ifcond");
+        newRes);
   } else if (condValue->dataType->base == DATA_TYPE::DATATYPE_FLOAT) {
+    Value *newRes =
+        new TempValue(new Type{DATA_TYPE::DATATYPE_FLOAT, nullptr}, "ifcond");
     condValue = builder.CreateBinary(
         Opcode::FCmpNE, condValue,
         builder.CreateConstant(new Type{DATA_TYPE::DATATYPE_FLOAT, nullptr},
                                "0.0"),
-        "ifcond");
+        newRes);
   } else {
     throw std::runtime_error("Unsupported condition type in if");
   }

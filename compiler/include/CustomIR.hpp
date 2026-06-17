@@ -63,8 +63,24 @@ public:
   Type *dataType;
   std::string value;
   Value(Type *dataType, std::string value) : dataType(dataType), value(value) {}
-
+  Value(Value *val) : dataType(val->dataType), value(val->value) {}
   virtual ~Value() = default;
+};
+
+extern int tempCounter;
+class TempValue : public Value {
+
+public:
+  TempValue(Type *dataType, const std::string &value)
+      : Value(dataType, value + std::to_string(tempCounter++)) {}
+};
+
+class VariableValue : public Value {
+
+public:
+  int variable_id;
+  VariableValue(Type *dataType, const std::string &value, int variable_id)
+      : Value(dataType, value), variable_id(variable_id) {}
 };
 
 class Constant : public Value {
@@ -78,16 +94,14 @@ public:
 
   std::vector<Value *> operands;
 
-  Instruction(Opcode op, std::vector<Value *> operands, std::string value,
-              Type *dataType)
-      : Value(dataType, value), opcode(op), operands(operands) {}
+  Instruction(Opcode op, std::vector<Value *> operands, Value *res)
+      : Value(res), opcode(op), operands(operands) {}
 };
 
 class BinaryInstruction : public Instruction {
 public:
-  BinaryInstruction(Opcode op, Value *l, Value *r, std::string value,
-                    Type *dataType)
-      : Instruction(op, {l, r}, value, dataType) {}
+  BinaryInstruction(Opcode op, Value *l, Value *r, Value *res)
+      : Instruction(op, {l, r}, res) {}
 };
 
 class Function : public Value {

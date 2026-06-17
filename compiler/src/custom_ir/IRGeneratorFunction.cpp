@@ -28,11 +28,14 @@ custom_ir::Value *custom_ir::IRGenerator::generateFunction(FunctionStmt *func) {
   namedValues.emplace_back();
   int idx = 0;
   for (auto &arg : function->args) {
+    VariableValue *varValue =
+        new VariableValue(new Type{DATA_TYPE::DATATYPE_POINTER, arg->dataType},
+                          arg->value, variable_id++);
 
-    custom_ir::Value *alloca = builder.CreateAlloca(arg->value, arg->dataType);
+    custom_ir::Value *alloca = builder.CreateAlloca(varValue);
 
-    builder.CreateStore(arg, alloca);
-    namedValues.back()[arg->value] = alloca;
+    // builder.CreateStore(arg, alloca);
+    namedValues.back()[arg->value] = varValue;
 
     idx++;
   }
@@ -82,6 +85,7 @@ custom_ir::Value *custom_ir::IRGenerator::generateBlock(BlockStmt *block) {
 }
 
 custom_ir::Value *custom_ir::IRGenerator::generateReturn(ReturnStmt *stmt) {
+  std::cout << "Returning stmt" << std::endl;
   custom_ir::Function *function = builder.GetInsertBlock()->parent;
   Type *returnType = function->functionType;
 
@@ -104,16 +108,18 @@ custom_ir::Value *custom_ir::IRGenerator::generateReturn(ReturnStmt *stmt) {
   if (!areTypesEqual(retValue->dataType, returnType)) {
     if (returnType->base == DATA_TYPE::DATATYPE_FLOAT &&
         retValue->dataType->base == DATA_TYPE::DATATYPE_INT) {
-      retValue =
-          builder.CreateCast(retValue, returnType->base, "intToFloatReturn");
+      Value *newRes = new TempValue(returnType, "intToFloatReturn");
+      retValue = builder.CreateCast(retValue, newRes);
     } else if (returnType->base == DATA_TYPE::DATATYPE_INT &&
                retValue->dataType->base == DATA_TYPE::DATATYPE_FLOAT) {
-      builder.CreateCast(retValue, returnType->base, "floatToIntReturn");
+
+      Value *newRes = new TempValue(returnType, "floatToIntReturn");
+      builder.CreateCast(retValue, newRes);
     } else {
       throw std::runtime_error("Return type mismatch\n");
     }
   }
-
+  std::cout << "Returned stmt" << std::endl;
   return builder.CreateRet(retValue);
 }
 

@@ -1,6 +1,10 @@
 #include <CustomIRBuilder.hpp>
 #include <vector>
 
+namespace custom_ir {
+int tempCounter = 0;
+}
+
 void custom_ir::IRBuilder::setInsertPoint(BasicBlockIR *block) {
   insertPoint = block;
 }
@@ -23,53 +27,58 @@ custom_ir::IRBuilder::insert(custom_ir::Instruction *inst) {
 }
 
 custom_ir::Value *custom_ir::IRBuilder::CreateCast(custom_ir::Value *val,
-                                                   DATA_TYPE newType,
-                                                   std::string value) {
+                                                   custom_ir::Value *res) {
+  std::vector<custom_ir::Value *> operands{val, res};
+  custom_ir::Instruction *castInstruction = new Instruction(
+      res->dataType->base == DATA_TYPE::DATATYPE_FLOAT ? Opcode::Cast_FLOAT
+                                                       : Opcode::Cast_INT,
+      operands, res);
 
-  std::vector<custom_ir::Value *> operands{val};
-  custom_ir::Instruction *castInstruction =
-      new Instruction(newType == DATA_TYPE::DATATYPE_FLOAT ? Opcode::Cast_FLOAT
-                                                           : Opcode::Cast_INT,
-                      operands, value, new Type{newType, nullptr});
-
-  return insert(castInstruction);
+  insert(castInstruction);
+  return res;
 }
 
 custom_ir::Value *custom_ir::IRBuilder::CreateBinary(custom_ir::Opcode op,
                                                      custom_ir::Value *lhs,
                                                      custom_ir::Value *rhs,
-                                                     std::string value) {
-  auto *inst = new BinaryInstruction(op, lhs, rhs, value, lhs->dataType);
+                                                     custom_ir::Value *res) {
 
-  return insert(inst);
+  auto *inst = new BinaryInstruction(op, lhs, rhs, res);
+
+  insert(inst);
+  return res;
 }
 
-custom_ir::Value *custom_ir::IRBuilder::CreateStore(custom_ir::Value *var,
-                                                    custom_ir::Value *ptr) {
+custom_ir::Value *
+custom_ir::IRBuilder::CreateStore(custom_ir::VariableValue *var,
+                                  custom_ir::Value *value) {
 
-  std::vector<custom_ir::Value *> operands{ptr, var};
-  custom_ir::Instruction *inst =
-      new Instruction(Opcode::Store, operands, ptr->value, ptr->dataType);
+  std::vector<custom_ir::Value *> operands{value, var};
+  custom_ir::Instruction *inst = new Instruction(Opcode::Store, operands, var);
 
-  return insert(inst);
+  insert(inst);
+  return var;
 }
 
 custom_ir::Value *custom_ir::IRBuilder::CreateBitCast(custom_ir::Value *var,
                                                       custom_ir::Value *ptr) {
   std::vector<custom_ir::Value *> operands{var, ptr};
   custom_ir::Instruction *inst =
-      new Instruction(Opcode::Bit_Cast, operands, var->value, var->dataType);
+      new Instruction(Opcode::Bit_Cast, operands, var);
 
-  return insert(inst);
+  insert(inst);
+
+  return var;
 }
 
-custom_ir::Value *custom_ir::IRBuilder::CreateLoad(Type *type, Value *val,
-                                                   std::string name) {
-  std::vector<custom_ir::Value *> operands{val};
-  custom_ir::Instruction *inst =
-      new Instruction(Opcode::Load, operands, name, type);
+custom_ir::Value *custom_ir::IRBuilder::CreateLoad(VariableValue *val,
+                                                   Value *res) {
+  std::vector<custom_ir::Value *> operands{val, res};
+  custom_ir::Instruction *inst = new Instruction(Opcode::Load, operands, res);
 
-  return insert(inst);
+  insert(inst);
+
+  return res;
 }
 
 custom_ir::Value *custom_ir::IRBuilder::CreateConstant(Type *type,
@@ -79,33 +88,31 @@ custom_ir::Value *custom_ir::IRBuilder::CreateConstant(Type *type,
   return constVal;
 }
 
-custom_ir::Value *custom_ir::IRBuilder::CreateGlobalVariable(std::string name,
-                                                             Type *type,
+custom_ir::Value *custom_ir::IRBuilder::CreateGlobalVariable(VariableValue *var,
                                                              Value *val) {
-  std::vector<custom_ir::Value *> operands{val};
-  Type *newType = new Type{DATA_TYPE::DATATYPE_POINTER, type};
+  std::vector<custom_ir::Value *> operands{val, var};
   custom_ir::Instruction *inst =
-      new Instruction(Opcode::Global_Dec, operands, name, newType);
+      new Instruction(Opcode::Global_Dec, operands, var);
 
-  return inst;
+  return var;
 }
 
-custom_ir::Value *custom_ir::IRBuilder::CreateAlloca(std::string name,
-                                                     Type *type) {
-  std::vector<custom_ir::Value *> operands{};
-  Type *newType = new Type{DATA_TYPE::DATATYPE_POINTER, type};
-  custom_ir::Instruction *inst =
-      new Instruction(Opcode::Alloca, operands, name, newType);
+custom_ir::Value *custom_ir::IRBuilder::CreateAlloca(VariableValue *val) {
+  std::vector<custom_ir::Value *> operands{val};
+  custom_ir::Instruction *inst = new Instruction(Opcode::Alloca, operands, val);
 
-  return insert(inst);
+  insert(inst);
+
+  return val;
 }
 
 custom_ir::Value *custom_ir::IRBuilder::CreateRet(Value *val) {
   std::vector<custom_ir::Value *> operands{val};
-  custom_ir::Instruction *inst =
-      new Instruction(Opcode::Return, operands, val->value, val->dataType);
+  custom_ir::Instruction *inst = new Instruction(Opcode::Return, operands, val);
 
-  return insert(inst);
+  insert(inst);
+
+  return val;
 }
 
 custom_ir::Value *custom_ir::IRBuilder::CreateCall(Function *func,
@@ -113,8 +120,7 @@ custom_ir::Value *custom_ir::IRBuilder::CreateCall(Function *func,
                                                    std::vector<Value *> args) {
   std::vector<custom_ir::Value *> operands{args};
   operands.push_back(func);
-  custom_ir::Instruction *inst =
-      new Instruction(Opcode::Call, operands, func->name, func->functionType);
+  custom_ir::Instruction *inst = new Instruction(Opcode::Call, operands, func);
 
   return insert(inst);
 }
@@ -126,7 +132,7 @@ custom_ir::IRBuilder::CreateCallExternal(std::string name, Type *type,
   std::vector<custom_ir::Value *> operands{args};
   operands.push_back(new Value(type, name));
   custom_ir::Instruction *inst =
-      new Instruction(Opcode::CallExternal, operands, name, type);
+      new Instruction(Opcode::CallExternal, operands, new Value(type, name));
 
   return insert(inst);
 }
@@ -135,9 +141,9 @@ custom_ir::Value *custom_ir::IRBuilder::CreateCondBr(Value *condValue,
                                                      BasicBlockIR *thenBB,
                                                      BasicBlockIR *elseBB) {
   std::vector<custom_ir::Value *> operands{condValue, thenBB, elseBB};
-  custom_ir::Instruction *inst =
-      new Instruction(Opcode::CondBranch, operands, "condBranch",
-                      new Type{DATA_TYPE::DATATYPE_VOID, nullptr});
+  custom_ir::Instruction *inst = new Instruction(
+      Opcode::CondBranch, operands,
+      new Value(new Type{DATA_TYPE::DATATYPE_VOID, nullptr}, "condBranch"));
 
   BasicBlockIR *currentBB = insertPoint;
   currentBB->successor.push_back(thenBB);
@@ -151,9 +157,9 @@ custom_ir::Value *custom_ir::IRBuilder::CreateCondBr(Value *condValue,
 
 custom_ir::Value *custom_ir::IRBuilder::CreateBr(BasicBlockIR *laterBB) {
   std::vector<custom_ir::Value *> operands{laterBB};
-  custom_ir::Instruction *inst =
-      new Instruction(Opcode::Branch, operands, "branch",
-                      new Type{DATA_TYPE::DATATYPE_VOID, nullptr});
+  custom_ir::Instruction *inst = new Instruction(
+      Opcode::Branch, operands,
+      new Value(new Type{DATA_TYPE::DATATYPE_VOID, nullptr}, "branch"));
 
   BasicBlockIR *currentBB = insertPoint;
   currentBB->successor.push_back(laterBB);
@@ -169,7 +175,7 @@ custom_ir::IRBuilder::CreateGoCall(Function *func, std::string callName,
   std::vector<custom_ir::Value *> operands{args};
   operands.push_back(func);
   custom_ir::Instruction *inst =
-      new Instruction(Opcode::GoCall, operands, func->name, func->functionType);
+      new Instruction(Opcode::GoCall, operands, func);
 
   return insert(inst);
 }
