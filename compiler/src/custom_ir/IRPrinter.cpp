@@ -124,8 +124,6 @@ std::string IRPrinter::opcodeToString(Opcode op) {
   case Opcode::Store:
     return "store";
 
-  case Opcode::Jump:
-    return "jump";
   case Opcode::CondBranch:
     return "condbr";
   case Opcode::Branch:

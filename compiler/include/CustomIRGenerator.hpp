@@ -13,11 +13,6 @@ class IRBuilder;
 
 class IRGenerator {
 
-  std::map<DATA_TYPE, int> sizeOfTypes = {
-      {DATA_TYPE::DATATYPE_INT, 4},
-      {DATA_TYPE::DATATYPE_FLOAT, 8},
-      {DATA_TYPE::DATATYPE_POINTER, 8},
-  };
   SemanticAnalyser &semanticAnalyser;
   IRBuilder &builder;
   IRPrinter &printer;

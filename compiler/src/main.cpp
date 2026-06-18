@@ -3,6 +3,7 @@
 #include <CustomIRPrinter.hpp>
 #include <CustomSSAGenerator.hpp>
 #include <DominanceAnalysis.hpp>
+#include <LLVMIRGenerator.hpp>
 #include <Lexer.hpp>
 #include <Parser.hpp>
 #include <SemanticAnalyser.hpp>
@@ -30,15 +31,16 @@ int main(int argc, char **argv) {
   Lexer lexer(input);
   Parser parser(lexer);
   SemanticAnalyser semanticAnalyser(parser);
-  // IRGenerator irGen(semanticAnalyser);
-  // irGen.optimizeModule();
-  // irGen.writeIRToFile(argv[2]);
-  // std::cout << "IR written to the output.ll\n";
   custom_ir::IRPrinter printer;
   custom_ir::IRBuilder builder;
   custom_ir::IRGenerator customIRGenerator(semanticAnalyser, builder, printer);
   custom_ir::DominatorAnalysis dominatorAnalysis(customIRGenerator.module);
   custom_ir::SSAGenerator ssaGenerator(customIRGenerator.module,
                                        dominatorAnalysis, printer);
+  custom_ir::LLVMIRGenerator llvmIRGenerator(ssaGenerator);
+  // IRGenerator irGen(semanticAnalyser);
+  // irGen.optimizeModule();
+  // irGen.writeIRToFile(argv[2]);
+  // std::cout << "IR written to the output.ll\n";
   return 0;
 }

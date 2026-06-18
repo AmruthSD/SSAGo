@@ -1,9 +1,10 @@
-#include <IRGenerator.hpp>
+#include <LLVMIRGenerator.hpp>
 
 #include <llvm/Support/FileSystem.h>
 #include <llvm/Support/raw_ostream.h>
 
-void IRGenerator::writeIRToFile(const std::string &filename) {
+namespace custom_ir {
+void LLVMIRGenerator::writeIRToFile(const std::string &filename) {
   std::error_code EC;
   llvm::raw_fd_ostream outFile(filename, EC);
 
@@ -13,3 +14,4 @@ void IRGenerator::writeIRToFile(const std::string &filename) {
 
   module->print(outFile, nullptr);
 }
+} // namespace custom_ir

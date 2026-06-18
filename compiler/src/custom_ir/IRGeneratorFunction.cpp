@@ -17,10 +17,6 @@ custom_ir::Value *custom_ir::IRGenerator::generateFunction(FunctionStmt *func) {
       new Function("__user_" + func->identifier, functionType, paramTypes);
   module->functions["__user_" + func->identifier] = function;
 
-  //   unsigned idx = 0;
-  //   for (auto &arg : function->args())
-  //     arg.setName(func->arguments[idx++].first);
-
   BasicBlockIR *entry = new BasicBlockIR("entry", function);
 
   builder.setInsertPoint(entry);
@@ -36,7 +32,7 @@ custom_ir::Value *custom_ir::IRGenerator::generateFunction(FunctionStmt *func) {
 
     // builder.CreateStore(arg, alloca);
     namedValues.back()[arg->value] = varValue;
-
+    function->args[idx] = varValue;
     idx++;
   }
 
@@ -165,8 +161,6 @@ custom_ir::Value *custom_ir::IRGenerator::generateFunctionCall(CallExpr *expr) {
 
 custom_ir::Value *custom_ir::IRGenerator::generateSizeofExpr(SizeofExpr *expr) {
   Type *type = expr->dataType;
-  int size = sizeOfTypes[type->base];
 
-  return builder.CreateConstant(new Type{DATA_TYPE::DATATYPE_INT, nullptr},
-                                std::to_string(size));
+  return builder.CreateConstantSizeof(expr->dataType, "sizeOfNode");
 }

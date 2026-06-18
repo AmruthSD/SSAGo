@@ -22,7 +22,8 @@ custom_ir::Value *custom_ir::IRGenerator::generateIfElse(IfStmt *stmt) {
                                "0.0"),
         newRes);
   } else {
-    throw std::runtime_error("Unsupported condition type in if");
+    throw std::runtime_error("Unsupported condition type in if " +
+                             std::to_string((int)condValue->dataType->base));
   }
 
   custom_ir::Function *function = builder.GetInsertBlock()->parent;

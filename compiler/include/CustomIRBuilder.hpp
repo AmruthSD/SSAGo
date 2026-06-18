@@ -31,6 +31,7 @@ public:
                       BasicBlockIR *elseBB);
   Value *CreateGoCall(Function *func, std::string callName,
                       std::vector<Value *> args);
+  Value *CreateConstantSizeof(Type *, std::string);
   bool isInsertPointNull() { return insertPoint == nullptr; }
 };
 } // namespace custom_ir

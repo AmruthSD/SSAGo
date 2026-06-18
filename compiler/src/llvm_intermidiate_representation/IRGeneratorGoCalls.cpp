@@ -1,10 +1,11 @@
-#include <IRGenerator.hpp>
+#include <CommonExternalFunctions.hpp>
+#include <LLVMIRGenerator.hpp>
 
-llvm::Value *IRGenerator::generateGoFunc(GoStmt *stmt) {
-  std::string funcName = stmt->callee;
-  if (external_functions.find(funcName) == external_functions.end())
-    funcName = "__user_" + funcName;
+namespace custom_ir {
 
+llvm::Value *LLVMIRGenerator::generateGoFunc(Instruction *inst) {
+  Function *funcValue = static_cast<Function *>(inst->operands.back());
+  std::string funcName = funcValue->name;
   llvm::Function *func = module->getFunction(funcName);
   if (!func)
     return nullptr;
@@ -12,8 +13,8 @@ llvm::Value *IRGenerator::generateGoFunc(GoStmt *stmt) {
   std::vector<llvm::Value *> argValues;
   std::vector<llvm::Type *> argTypes;
 
-  for (auto &expr : stmt->arguments) {
-    llvm::Value *val = expr->codegen(*this);
+  for (int idx = 0; idx < inst->operands.size() - 1; idx++) {
+    llvm::Value *val = inst->operands[idx]->llvm_codegen(this);
     argValues.push_back(val);
     argTypes.push_back(val->getType());
   }
@@ -38,7 +39,7 @@ llvm::Value *IRGenerator::generateGoFunc(GoStmt *stmt) {
   return builder.CreateCall(spawnFunc, {fnPtr, voidPtr});
 }
 
-llvm::Function *IRGenerator::getOrCreateWrapper(llvm::Function *func) {
+llvm::Function *LLVMIRGenerator::getOrCreateWrapper(llvm::Function *func) {
   if (wrapperMap.find(func) != wrapperMap.end())
     return wrapperMap[func];
 
@@ -79,3 +80,4 @@ llvm::Function *IRGenerator::getOrCreateWrapper(llvm::Function *func) {
   wrapperMap[func] = wrapper;
   return wrapper;
 }
+} // namespace  custom_ir

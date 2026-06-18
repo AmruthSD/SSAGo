@@ -90,6 +90,13 @@ custom_ir::Value *custom_ir::IRBuilder::CreateConstant(Type *type,
   return constVal;
 }
 
+custom_ir::Value *
+custom_ir::IRBuilder::CreateConstantSizeof(Type *type, std::string value) {
+  custom_ir::ConstantSizeof *constVal = new ConstantSizeof(type, value);
+
+  return constVal;
+}
+
 custom_ir::Value *custom_ir::IRBuilder::CreateGlobalVariable(VariableValue *var,
                                                              Value *val) {
   std::vector<custom_ir::Value *> operands{val, var};

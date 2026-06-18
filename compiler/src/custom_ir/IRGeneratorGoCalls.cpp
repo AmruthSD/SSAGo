@@ -1,5 +1,4 @@
 #include <CustomIRGenerator.hpp>
-#include <IRGenerator.hpp>
 
 custom_ir::Value *custom_ir::IRGenerator::generateGoFunc(GoStmt *stmt) {
   std::string funcName = stmt->callee;

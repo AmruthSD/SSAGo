@@ -1,3 +1,5 @@
+#pragma once
+
 #include <CustomIR.hpp>
 #include <CustomIRPrinter.hpp>
 #include <DominanceAnalysis.hpp>
@@ -7,7 +9,6 @@
 
 namespace custom_ir {
 class SSAGenerator {
-  ModuleIR *module;
   DominatorAnalysis &dominanceAnalysis;
   IRPrinter &printer;
 
@@ -17,6 +18,7 @@ class SSAGenerator {
   std::unordered_map<int, std::stack<VariableValue *>> currentVersion;
 
 public:
+  ModuleIR *module;
   SSAGenerator(ModuleIR *module, DominatorAnalysis &dominanceAnalysis,
                IRPrinter &printer);
 

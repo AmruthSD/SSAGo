@@ -10,7 +10,7 @@ custom_ir::IRGenerator::IRGenerator(SemanticAnalyser &semanticAnalyser,
   std::cout << "Codegeneration is starting" << std::endl;
   semanticAnalyser.ast.get()->codegen(*this);
   std::cout << "Codegeneration is done" << std::endl;
-  printer.print(module);
+  // printer.print(module);
 }
 
 custom_ir::Value *custom_ir::IRGenerator::generateProgram(Program *prog) {

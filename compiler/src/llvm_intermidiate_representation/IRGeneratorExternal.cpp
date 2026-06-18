@@ -1,7 +1,8 @@
 #include <CommonExternalFunctions.hpp>
-#include <IRGenerator.hpp>
+#include <LLVMIRGenerator.hpp>
 
-llvm::Function *IRGenerator::declareExternalFunction(
+namespace custom_ir {
+llvm::Function *LLVMIRGenerator::declareExternalFunction(
     const std::string &name, llvm::Type *returnType,
     std::vector<llvm::Type *> paramTypes, bool isVarArg) {
   llvm::Function *func = module->getFunction(name);
@@ -17,7 +18,7 @@ llvm::Function *IRGenerator::declareExternalFunction(
   return func;
 }
 
-llvm::Function *IRGenerator::getOrDeclarePrintf() {
+llvm::Function *LLVMIRGenerator::getOrDeclarePrintf() {
 
   llvm::Type *i8PtrTy = llvm::Type::getInt8PtrTy(context);
 
@@ -25,7 +26,7 @@ llvm::Function *IRGenerator::getOrDeclarePrintf() {
                                  {i8PtrTy}, true);
 }
 
-llvm::Function *IRGenerator::getOrDeclareScanf() {
+llvm::Function *LLVMIRGenerator::getOrDeclareScanf() {
 
   llvm::Type *i8PtrTy = llvm::Type::getInt8PtrTy(context);
 
@@ -33,14 +34,14 @@ llvm::Function *IRGenerator::getOrDeclareScanf() {
                                  {i8PtrTy}, true);
 }
 
-llvm::Function *IRGenerator::getOrDeclareMalloc() {
+llvm::Function *LLVMIRGenerator::getOrDeclareMalloc() {
   llvm::Type *i8PtrTy = llvm::Type::getInt8PtrTy(context);
   llvm::Type *i64Ty = llvm::Type::getInt64Ty(context);
 
   return declareExternalFunction("malloc", i8PtrTy, {i64Ty}, false);
 }
 
-llvm::Function *IRGenerator::getOrDeclareSpawn() {
+llvm::Function *LLVMIRGenerator::getOrDeclareSpawn() {
 
   llvm::Type *voidTy = llvm::Type::getVoidTy(context);
   llvm::Type *i8PtrTy = llvm::Type::getInt8PtrTy(context);
@@ -49,41 +50,41 @@ llvm::Function *IRGenerator::getOrDeclareSpawn() {
                                  false);
 }
 
-llvm::Function *IRGenerator::getOrDeclareYield() {
+llvm::Function *LLVMIRGenerator::getOrDeclareYield() {
   return declareExternalFunction("yield", llvm::Type::getVoidTy(context), {},
                                  false);
 }
 
-void IRGenerator::generateYieldCall() {
+void LLVMIRGenerator::generateYieldCall() {
   llvm::Function *yieldFn = module->getFunction("yield");
   builder.CreateCall(yieldFn, {});
 }
 
-llvm::Function *IRGenerator::getOrDeclareWaitGroupNew() {
+llvm::Function *LLVMIRGenerator::getOrDeclareWaitGroupNew() {
   return declareExternalFunction("waitgroup_new",
                                  llvm::Type::getInt8PtrTy(context), {}, false);
 }
 
-llvm::Function *IRGenerator::getOrDeclareWaitGroupAdd() {
+llvm::Function *LLVMIRGenerator::getOrDeclareWaitGroupAdd() {
   return declareExternalFunction(
       "waitgroup_add", llvm::Type::getVoidTy(context),
       {llvm::Type::getInt8PtrTy(context), llvm::Type::getInt32Ty(context)},
       false);
 }
 
-llvm::Function *IRGenerator::getOrDeclareWaitGroupDone() {
+llvm::Function *LLVMIRGenerator::getOrDeclareWaitGroupDone() {
   return declareExternalFunction("waitgroup_done",
                                  llvm::Type::getVoidTy(context),
                                  {llvm::Type::getInt8PtrTy(context)}, false);
 }
 
-llvm::Function *IRGenerator::getOrDeclareWaitGroupWait() {
+llvm::Function *LLVMIRGenerator::getOrDeclareWaitGroupWait() {
   return declareExternalFunction("waitgroup_wait",
                                  llvm::Type::getVoidTy(context),
                                  {llvm::Type::getInt8PtrTy(context)}, false);
 }
 
-void IRGenerator::generateAllExternalFUnctions() {
+void LLVMIRGenerator::generateAllExternalFUnctions() {
   getOrDeclarePrintf();
   getOrDeclareScanf();
   getOrDeclareMalloc();
@@ -94,3 +95,4 @@ void IRGenerator::generateAllExternalFUnctions() {
   getOrDeclareWaitGroupDone();
   getOrDeclareWaitGroupWait();
 }
+} // namespace custom_ir

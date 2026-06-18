@@ -14,7 +14,6 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     "compiler/src/*.cpp"
     "compiler/src/**/*.cpp"
 )
-list(FILTER SOURCES EXCLUDE REGEX "compiler/src/intermidiate_representation/.*")
 
 add_executable(compiler ${SOURCES})
 target_include_directories(compiler PUBLIC compiler/include)
@@ -33,3 +32,4 @@ file(GLOB_RECURSE RUNTIME_SOURCES CONFIGURE_DEPENDS
 add_library(runtime STATIC ${RUNTIME_SOURCES})
 target_include_directories(runtime PUBLIC runtime/include)
 target_link_libraries(runtime PUBLIC Boost::context)
+add_link_options(-fuse-ld=lld)
