@@ -7,11 +7,10 @@ custom_ir::IRGenerator::IRGenerator(SemanticAnalyser &semanticAnalyser,
       printer(IRPrinter) {
   module = new ModuleIR();
   namedValues.emplace_back();
+  std::cout << "Codegeneration is starting" << std::endl;
   semanticAnalyser.ast.get()->codegen(*this);
   std::cout << "Codegeneration is done" << std::endl;
   printer.print(module);
-  DominatorAnalysis *domAnalyser = new DominatorAnalysis(module);
-  domAnalyser->run();
 }
 
 custom_ir::Value *custom_ir::IRGenerator::generateProgram(Program *prog) {
@@ -199,8 +198,8 @@ custom_ir::Value *custom_ir::IRGenerator::generateUnaryExpr(UnaryExpr *expr) {
     VariableValue *varValue = dynamic_cast<VariableValue *>(ptr);
     if (varValue == nullptr)
       throw std::runtime_error("Load allowed only to a variable");
-    return builder.CreateLoad(varValue,
-                              new TempValue(elementType, "deref_val"));
+    return builder.CreateLoad(
+        varValue, new TempValue(elementType, varValue->value + "_deref_val"));
   }
   case TOKEN_TYPE::AMPERSAND: {
     return expr->operand->codegenLValue(*this);
@@ -242,8 +241,7 @@ custom_ir::Value *custom_ir::IRGenerator::generateVariable(VariableExpr *expr) {
   if (varValue == nullptr)
     throw std::runtime_error("Load allowed only to a variable");
   return builder.CreateLoad(
-      varValue,
-      new VariableValue(elementType, varValue->value, varValue->variable_id));
+      varValue, new TempValue(elementType, varValue->value + "_val"));
 }
 
 custom_ir::Value *
@@ -292,6 +290,10 @@ custom_ir::IRGenerator::generateDeclaration(DeclarationStmt *stmt) {
         new VariableValue(new Type{DATA_TYPE::DATATYPE_POINTER, varType},
                           stmt->identifier, variable_id++);
     auto *global = builder.CreateGlobalVariable(varVal, constant);
+
+    Instruction *globalInst = dynamic_cast<Instruction *>(global);
+
+    module->globalDeclarations->instructions.push_back(globalInst);
 
     namedValues.back()[stmt->identifier] = varVal;
 

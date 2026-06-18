@@ -3,7 +3,9 @@
 
 namespace custom_ir {
 int tempCounter = 0;
-}
+
+std::map<int, VariableValue *> variableValues = {};
+} // namespace custom_ir
 
 void custom_ir::IRBuilder::setInsertPoint(BasicBlockIR *block) {
   insertPoint = block;
@@ -94,13 +96,14 @@ custom_ir::Value *custom_ir::IRBuilder::CreateGlobalVariable(VariableValue *var,
   custom_ir::Instruction *inst =
       new Instruction(Opcode::Global_Dec, operands, var);
 
-  return var;
+  return inst;
 }
 
 custom_ir::Value *custom_ir::IRBuilder::CreateAlloca(VariableValue *val) {
   std::vector<custom_ir::Value *> operands{val};
   custom_ir::Instruction *inst = new Instruction(Opcode::Alloca, operands, val);
 
+  variableValues[val->variable_id] = val;
   insert(inst);
 
   return val;

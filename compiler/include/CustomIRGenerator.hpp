@@ -12,7 +12,7 @@ namespace custom_ir {
 class IRBuilder;
 
 class IRGenerator {
-  ModuleIR *module;
+
   std::map<DATA_TYPE, int> sizeOfTypes = {
       {DATA_TYPE::DATATYPE_INT, 4},
       {DATA_TYPE::DATATYPE_FLOAT, 8},
@@ -74,6 +74,7 @@ class IRGenerator {
       {TOKEN_TYPE::AND, "fandtmp"},      {TOKEN_TYPE::OR, "fortmp"}};
 
 public:
+  ModuleIR *module;
   IRGenerator(SemanticAnalyser &semanticAnalyser, IRBuilder &irBuilder,
               IRPrinter &IRPrinter);
 

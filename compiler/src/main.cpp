@@ -1,6 +1,8 @@
 #include <CustomIRBuilder.hpp>
 #include <CustomIRGenerator.hpp>
 #include <CustomIRPrinter.hpp>
+#include <CustomSSAGenerator.hpp>
+#include <DominanceAnalysis.hpp>
 #include <Lexer.hpp>
 #include <Parser.hpp>
 #include <SemanticAnalyser.hpp>
@@ -35,6 +37,8 @@ int main(int argc, char **argv) {
   custom_ir::IRPrinter printer;
   custom_ir::IRBuilder builder;
   custom_ir::IRGenerator customIRGenerator(semanticAnalyser, builder, printer);
-
+  custom_ir::DominatorAnalysis dominatorAnalysis(customIRGenerator.module);
+  custom_ir::SSAGenerator ssaGenerator(customIRGenerator.module,
+                                       dominatorAnalysis, printer);
   return 0;
 }

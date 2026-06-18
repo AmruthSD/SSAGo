@@ -4,6 +4,7 @@
 namespace custom_ir {
 
 void IRPrinter::print(ModuleIR *module) {
+  printBasicBlock(module->globalDeclarations);
   for (auto &[name, func] : module->functions) {
     printFunction(func);
     std::cout << "\n";
@@ -48,17 +49,30 @@ void IRPrinter::printBasicBlock(BasicBlockIR *bb) {
 }
 
 void IRPrinter::printInstruction(Instruction *inst) {
-  std::cout << inst->value << " = " << opcodeToString(inst->opcode);
+  std::cout << opcodeToString(inst->opcode);
 
   if (!inst->operands.empty()) {
     std::cout << " ";
 
     for (size_t i = 0; i < inst->operands.size(); i++) {
-      std::cout << inst->operands[i]->value;
+      printValue(inst->operands[i]);
 
       if (i + 1 < inst->operands.size())
         std::cout << ", ";
     }
+  }
+}
+
+void IRPrinter::printValue(Value *val) {
+  VariableValue *varVal = dynamic_cast<VariableValue *>(val);
+  if (varVal == nullptr) {
+    std::cout << val->value + " ";
+  } else {
+    std::string suff;
+    if (varVal->version != -1) {
+      suff = std::to_string(varVal->version);
+    }
+    std::cout << val->value + suff + " ";
   }
 }
 

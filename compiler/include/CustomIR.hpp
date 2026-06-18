@@ -7,6 +7,7 @@
 #include <vector>
 
 namespace custom_ir {
+
 class IRGenerator;
 
 enum class Opcode {
@@ -79,6 +80,7 @@ class VariableValue : public Value {
 
 public:
   int variable_id;
+  int version = -1;
   VariableValue(Type *dataType, const std::string &value, int variable_id)
       : Value(dataType, value), variable_id(variable_id) {}
 };
@@ -96,6 +98,14 @@ public:
 
   Instruction(Opcode op, std::vector<Value *> operands, Value *res)
       : Value(res), opcode(op), operands(operands) {}
+};
+
+class PhiInstruction : public Instruction {
+public:
+  int variableId;
+
+  PhiInstruction(int variableId, Value *res)
+      : Instruction(Opcode::Phi, {}, res), variableId(variableId) {}
 };
 
 class BinaryInstruction : public Instruction {
@@ -128,8 +138,9 @@ public:
   std::vector<Instruction *> instructions;
 
   BasicBlockIR(std::string name, Function *func)
-      : Value(func->functionType, name), parent(func), name(name) {
-    parent->blocks.push_back(this);
+      : Value(nullptr, name), parent(func), name(name) {
+    if (parent != nullptr)
+      parent->blocks.push_back(this);
   }
 
   bool hasTerminator() {
@@ -145,7 +156,12 @@ public:
 
 class ModuleIR {
 public:
+  BasicBlockIR *globalDeclarations;
   std::map<std::string, Function *> functions;
+
+  ModuleIR() { globalDeclarations = new BasicBlockIR("global_dec", nullptr); }
 };
+
+extern std::map<int, VariableValue *> variableValues;
 
 }; // namespace custom_ir
