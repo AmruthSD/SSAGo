@@ -39,7 +39,7 @@ LLVMIRGenerator::LLVMIRGenerator(SSAGenerator &ssaGenerator)
       builder(context) {
   generateAllExternalFUnctions();
   ssaGenerator.module->llvm_codegen(this);
-  module->print(llvm::errs(), nullptr);
+  // module->print(llvm::errs(), nullptr);
 
   if (llvm::verifyModule(*module, &llvm::errs())) {
     llvm::errs() << "Module verification failed!\n";
@@ -54,6 +54,8 @@ llvm::Value *LLVMIRGenerator::generateModule(ModuleIR *module) {
     std::cout << "function declarations for " + func->name << std::endl;
     func->llvm_codegen(this);
   }
+
+  return nullptr;
 }
 
 llvm::Value *LLVMIRGenerator::generateGlobalVariables(BasicBlockIR *block) {
@@ -79,6 +81,7 @@ llvm::Value *LLVMIRGenerator::generateGlobalVariables(BasicBlockIR *block) {
       return global;
     }
   }
+  return nullptr;
 }
 
 llvm::Value *LLVMIRGenerator::getVariablePointer(std::string &name) {
@@ -121,7 +124,6 @@ llvm::Value *LLVMIRGenerator::generateLiteral(Constant *expr) {
 
 llvm::Value *LLVMIRGenerator::getTempValue(TempValue *val) {
   llvm::Value *temp = tempValues[val->value];
-  std::cout << "temp fetched for the " + val->value << std::endl;
   if (val == nullptr)
     throw std::runtime_error("temp value not yet created for " + val->value);
   return temp;
@@ -179,11 +181,6 @@ llvm::Value *LLVMIRGenerator::generateLoad(Instruction *inst) {
 llvm::Value *LLVMIRGenerator::generateStore(Instruction *inst) {
   llvm::Value *temp = inst->operands[0]->llvm_codegen(this);
   llvm::Value *varValue = inst->operands[1]->llvm_codegen(this);
-
-  std::cout << inst->operands[1]->value << " is tempval?"
-            << (dynamic_cast<TempValue *>(inst->operands[1]) == nullptr)
-            << (dynamic_cast<VariableValue *>(inst->operands[1]) == nullptr)
-            << std::endl;
 
   llvm::Type *expectedType = varValue->getType()->getPointerElementType();
 

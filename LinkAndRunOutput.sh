@@ -4,6 +4,7 @@ set -e  # stop on error
 ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
 BUILD_DIR="$ROOT_DIR/build"
 INPUT_FILE="$ROOT_DIR/input.txt"
+INPUT_DATA="$ROOT_DIR/input_data.txt"
 IR_FILE="$BUILD_DIR/output.ll"
 RUNTIME_LIB="$BUILD_DIR/libruntime.a"
 PROGRAM="$BUILD_DIR/program"
@@ -14,4 +15,4 @@ cmake --build "$BUILD_DIR"
 
 clang++ "$IR_FILE" "$RUNTIME_LIB" -o "$PROGRAM" -lboost_context
 
-"$PROGRAM"
+"$PROGRAM"<"$INPUT_DATA"

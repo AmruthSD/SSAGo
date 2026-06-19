@@ -79,6 +79,8 @@ llvm::Value *LLVMIRGenerator::generateBlock(BasicBlockIR *block) {
   llvm::BasicBlock *newBlock = getOrCreateBasicBlock(block);
   if (builder.GetInsertBlock() != newBlock)
     builder.SetInsertPoint(newBlock);
+
+  generateYieldCall();
   for (auto &stmt : block->instructions)
     stmt->llvm_codegen(this);
 
@@ -88,7 +90,7 @@ llvm::Value *LLVMIRGenerator::generateBlock(BasicBlockIR *block) {
 
 llvm::Value *LLVMIRGenerator::generateFunctionCall(Instruction *inst) {
 
-  // generateYieldCall();
+  generateYieldCall();
 
   Function *funcValue = static_cast<Function *>(inst->operands.back());
   std::string functionName = funcValue->name;
@@ -116,6 +118,9 @@ llvm::Value *LLVMIRGenerator::generateFunctionCall(Instruction *inst) {
 }
 
 llvm::Value *LLVMIRGenerator::generateExternalCall(Instruction *inst) {
+
+  generateYieldCall();
+
   std::string functionName = inst->value;
   llvm::Function *function = module->getFunction(functionName);
   if (!function)

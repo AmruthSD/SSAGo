@@ -106,9 +106,6 @@ custom_ir::Value *custom_ir::IRGenerator::generateBinary(BinaryExpr *expr) {
       }
     }
 
-    std::cout << ptr->value << " is tempval?"
-              << (dynamic_cast<TempValue *>(ptr) == nullptr)
-              << (dynamic_cast<VariableValue *>(ptr) == nullptr) << std::endl;
     builder.CreateStore(ptr, value);
     return value;
   }

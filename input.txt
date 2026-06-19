@@ -1,0 +1,34 @@
+function hello(abc int) int{
+    int y = abc+50;
+    return y;
+}
+    int x = 0;
+
+function main()int{
+    int k = 1*1 + 2*2;
+    int z = 2;
+    printf("before scanf\n");
+scanf("%d",&x);
+printf("after scanf\n");
+    int  *y = malloc(sizeof(int));
+    *y = 3;
+    printf("y=%d\n",*y);
+    while(x<10){
+        x=x+1;
+        printf("x = %d\n",x);
+        if(x==5){
+            continue;
+        }else {
+            break;
+        }
+    }
+    z = 5;
+
+    if(z==0){
+        z=1;
+    }else{
+        z=3;
+    }
+    z = 10;
+    printf("z = %d\n",z);
+}
