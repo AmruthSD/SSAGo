@@ -3,7 +3,7 @@ set -e  # stop on error
 
 ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
 BUILD_DIR="$ROOT_DIR/build"
-INPUT_FILE="$ROOT_DIR/input.txt"
+INPUT_FILE="$ROOT_DIR/${1}"
 INPUT_DATA="$ROOT_DIR/input_data.txt"
 IR_FILE="$BUILD_DIR/output.ll"
 RUNTIME_LIB="$BUILD_DIR/libruntime.a"

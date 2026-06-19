@@ -1,5 +1,6 @@
 function hello(abc int) int{
     int y = abc+50;
+    printf("hello %d\n",y);
     return y;
 }
     int x = 0;
@@ -7,6 +8,7 @@ function hello(abc int) int{
 function main()int{
     int k = 1*1 + 2*2;
     int z = 2;
+    go hello(x);
     printf("before scanf\n");
 scanf("%d",&x);
 printf("after scanf\n");

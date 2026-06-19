@@ -12,10 +12,7 @@ extern "C" void runtime_spawn(void *fn, void *args) {
   Runtime::getInstance().spawn(c);
 }
 
-extern "C" void yield() {
-  std::cout << "yeild  made" << std::endl;
-  Runtime::getInstance().yield();
-}
+extern "C" void yield() { Runtime::getInstance().yield(); }
 
 extern "C" {
 void *waitgroup_new() { return new WaitGroup(); }
