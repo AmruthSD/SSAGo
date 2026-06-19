@@ -121,6 +121,7 @@ llvm::Value *LLVMIRGenerator::generateLiteral(Constant *expr) {
 
 llvm::Value *LLVMIRGenerator::getTempValue(TempValue *val) {
   llvm::Value *temp = tempValues[val->value];
+  std::cout << "temp fetched for the " + val->value << std::endl;
   if (val == nullptr)
     throw std::runtime_error("temp value not yet created for " + val->value);
   return temp;
@@ -157,7 +158,6 @@ llvm::Value *LLVMIRGenerator::generateCast(Instruction *inst) {
 }
 
 llvm::Value *LLVMIRGenerator::generateAlloca(Instruction *inst) {
-  std::cout << "Alloca instruction generation" << std::endl;
   VariableValue *var = static_cast<VariableValue *>(inst->operands[0]);
   llvm::Type *varType = getLLVMType(var->dataType->pointee, context);
   if (variableValuesLLVM[var->variable_id] != nullptr)
@@ -168,7 +168,6 @@ llvm::Value *LLVMIRGenerator::generateAlloca(Instruction *inst) {
 }
 
 llvm::Value *LLVMIRGenerator::generateLoad(Instruction *inst) {
-  std::cout << "Load instruction generation" << std::endl;
   Value *tempVal = inst->operands[1];
   llvm::Value *varVal = inst->operands[0]->llvm_codegen(this);
   llvm::Type *elementType = varVal->getType()->getPointerElementType();
@@ -178,9 +177,25 @@ llvm::Value *LLVMIRGenerator::generateLoad(Instruction *inst) {
 }
 
 llvm::Value *LLVMIRGenerator::generateStore(Instruction *inst) {
-  std::cout << "Store instruction generation" << std::endl;
   llvm::Value *temp = inst->operands[0]->llvm_codegen(this);
   llvm::Value *varValue = inst->operands[1]->llvm_codegen(this);
+
+  std::cout << inst->operands[1]->value << " is tempval?"
+            << (dynamic_cast<TempValue *>(inst->operands[1]) == nullptr)
+            << (dynamic_cast<VariableValue *>(inst->operands[1]) == nullptr)
+            << std::endl;
+
+  llvm::Type *expectedType = varValue->getType()->getPointerElementType();
+
+  if (temp->getType() != expectedType) {
+    if (temp->getType()->isPointerTy() &&
+        temp->getType()->getPointerElementType()->isIntegerTy(8) &&
+        expectedType->isPointerTy()) {
+
+      temp = builder.CreateBitCast(temp, expectedType);
+    }
+  }
+
   return builder.CreateStore(temp, varValue);
 }
 

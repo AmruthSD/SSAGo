@@ -156,16 +156,51 @@ Token Lexer::nextToken() {
     advance();
 
     while (!input.eof() && currentChar != '"') {
+
+      if (currentChar == '\\') {
+        advance();
+
+        switch (currentChar) {
+        case 'n':
+          lexeme += '\n';
+          break;
+
+        case 't':
+          lexeme += '\t';
+          break;
+
+        case 'r':
+          lexeme += '\r';
+          break;
+
+        case '\\':
+          lexeme += '\\';
+          break;
+
+        case '"':
+          lexeme += '"';
+          break;
+
+        default:
+          lexeme += currentChar;
+          break;
+        }
+
+        advance();
+        continue;
+      }
+
       lexeme += currentChar;
       advance();
     }
+
     if (currentChar == '"') {
       advance();
       return {lexeme, TOKEN_TYPE::STRING_LITERAL};
     }
+
     return {lexeme, TOKEN_TYPE::UNKNOWN};
   }
-
   char unknownChar = currentChar;
   advance();
   return {std::string(1, unknownChar), TOKEN_TYPE::UNKNOWN};

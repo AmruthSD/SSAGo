@@ -26,8 +26,6 @@ llvm::Value *LLVMIRGenerator::generateFunction(Function *func) {
   namedValues.emplace_back();
   idx = 0;
 
-  std::cout << "function is created making arguments " << func->args.size()
-            << std::endl;
   builder.SetInsertPoint(getOrCreateBasicBlock(func->blocks[0]));
   for (auto &arg : function->args()) {
 
@@ -49,8 +47,6 @@ llvm::Value *LLVMIRGenerator::generateFunction(Function *func) {
     idx++;
   }
 
-  std::cout << "function is made generating instructions" << std::endl;
-
   for (auto &block : func->blocks) {
     block->llvm_codegen(this);
   }
@@ -62,9 +58,15 @@ llvm::Value *LLVMIRGenerator::generateFunction(Function *func) {
 }
 
 llvm::BasicBlock *LLVMIRGenerator::getOrCreateBasicBlock(BasicBlockIR *block) {
-  llvm::BasicBlock *newBlock = basicBlocks[block];
-  if (newBlock == nullptr)
-    newBlock = llvm::BasicBlock::Create(context, block->name, currentFunction);
+  auto it = basicBlocks.find(block);
+
+  if (it != basicBlocks.end())
+    return it->second;
+
+  llvm::BasicBlock *newBlock =
+      llvm::BasicBlock::Create(context, block->name, currentFunction);
+
+  basicBlocks[block] = newBlock;
 
   return newBlock;
 }
@@ -75,7 +77,8 @@ llvm::Value *LLVMIRGenerator::generateBlock(BasicBlockIR *block) {
   namedValues.emplace_back();
 
   llvm::BasicBlock *newBlock = getOrCreateBasicBlock(block);
-  builder.SetInsertPoint(newBlock);
+  if (builder.GetInsertBlock() != newBlock)
+    builder.SetInsertPoint(newBlock);
   for (auto &stmt : block->instructions)
     stmt->llvm_codegen(this);
 
@@ -123,7 +126,6 @@ llvm::Value *LLVMIRGenerator::generateExternalCall(Instruction *inst) {
   int idx = 0;
   for (idx = 0; idx < inst->operands.size() - 1; idx++) {
     llvm::Value *argVal = inst->operands[idx]->llvm_codegen(this);
-    idx++;
     if (!argVal)
       throw std::runtime_error("Failed to generate argument in call to " +
                                functionName);

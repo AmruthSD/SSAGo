@@ -38,9 +38,7 @@ int main(int argc, char **argv) {
   custom_ir::SSAGenerator ssaGenerator(customIRGenerator.module,
                                        dominatorAnalysis, printer);
   custom_ir::LLVMIRGenerator llvmIRGenerator(ssaGenerator);
-  // IRGenerator irGen(semanticAnalyser);
-  // irGen.optimizeModule();
-  // irGen.writeIRToFile(argv[2]);
-  // std::cout << "IR written to the output.ll\n";
+  llvmIRGenerator.writeIRToFile(argv[2]);
+  std::cout << "IR written to the output.ll\n";
   return 0;
 }

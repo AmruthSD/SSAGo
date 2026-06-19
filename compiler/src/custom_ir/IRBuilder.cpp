@@ -51,9 +51,8 @@ custom_ir::Value *custom_ir::IRBuilder::CreateBinary(custom_ir::Opcode op,
   return res;
 }
 
-custom_ir::Value *
-custom_ir::IRBuilder::CreateStore(custom_ir::VariableValue *var,
-                                  custom_ir::Value *value) {
+custom_ir::Value *custom_ir::IRBuilder::CreateStore(custom_ir::Value *var,
+                                                    custom_ir::Value *value) {
 
   std::vector<custom_ir::Value *> operands{value, var};
   custom_ir::Instruction *inst = new Instruction(Opcode::Store, operands, var);
@@ -73,8 +72,7 @@ custom_ir::Value *custom_ir::IRBuilder::CreateBitCast(custom_ir::Value *var,
   return var;
 }
 
-custom_ir::Value *custom_ir::IRBuilder::CreateLoad(VariableValue *val,
-                                                   Value *res) {
+custom_ir::Value *custom_ir::IRBuilder::CreateLoad(Value *val, Value *res) {
   std::vector<custom_ir::Value *> operands{val, res};
   custom_ir::Instruction *inst = new Instruction(Opcode::Load, operands, res);
 
@@ -139,6 +137,7 @@ custom_ir::Value *
 custom_ir::IRBuilder::CreateCallExternal(std::string name, Type *type,
                                          std::string callName,
                                          std::vector<Value *> args) {
+
   std::vector<custom_ir::Value *> operands{args};
   operands.push_back(new Value(type, name));
   custom_ir::Instruction *inst =

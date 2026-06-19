@@ -16,9 +16,9 @@ public:
 
   Value *CreateCast(Value *, Value *);
   Value *CreateBinary(Opcode op, Value *lhs, Value *rhs, Value *res);
-  Value *CreateStore(VariableValue *, Value *);
+  Value *CreateStore(Value *, Value *);
   Value *CreateBitCast(Value *, Value *); // later just use type from the value
-  Value *CreateLoad(VariableValue *, Value *);
+  Value *CreateLoad(Value *, Value *);
   Value *CreateConstant(Type *, std::string);
   Value *CreateGlobalVariable(VariableValue *, Value *);
   Value *CreateAlloca(VariableValue *);

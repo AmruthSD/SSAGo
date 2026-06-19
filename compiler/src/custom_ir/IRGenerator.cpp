@@ -78,6 +78,10 @@ custom_ir::Value *custom_ir::IRGenerator::generateBinary(BinaryExpr *expr) {
     if (!value)
       return nullptr;
 
+    if (ptr->dataType->base != DATA_TYPE::DATATYPE_POINTER)
+      throw std::runtime_error(
+          "error as the lvalue of assign is not a pointer");
+
     Type *ptrElemTy = ptr->dataType->pointee;
 
     if (!areTypesEqual(value->dataType, ptrElemTy)) {
@@ -101,10 +105,11 @@ custom_ir::Value *custom_ir::IRGenerator::generateBinary(BinaryExpr *expr) {
         throw std::runtime_error("Invalid type mismatch in assignment\n");
       }
     }
-    VariableValue *varValue = dynamic_cast<VariableValue *>(ptr);
-    if (varValue == nullptr)
-      throw std::runtime_error("assignment allowed only to a variable");
-    builder.CreateStore(varValue, value);
+
+    std::cout << ptr->value << " is tempval?"
+              << (dynamic_cast<TempValue *>(ptr) == nullptr)
+              << (dynamic_cast<VariableValue *>(ptr) == nullptr) << std::endl;
+    builder.CreateStore(ptr, value);
     return value;
   }
   custom_ir::Value *L = expr->left->codegen(*this);
@@ -195,11 +200,8 @@ custom_ir::Value *custom_ir::IRGenerator::generateUnaryExpr(UnaryExpr *expr) {
 
     Type *elementType = ptr->dataType->pointee;
 
-    VariableValue *varValue = dynamic_cast<VariableValue *>(ptr);
-    if (varValue == nullptr)
-      throw std::runtime_error("Load allowed only to a variable");
     return builder.CreateLoad(
-        varValue, new TempValue(elementType, varValue->value + "_deref_val"));
+        ptr, new TempValue(elementType, ptr->value + "_deref_val"));
   }
   case TOKEN_TYPE::AMPERSAND: {
     return expr->operand->codegenLValue(*this);

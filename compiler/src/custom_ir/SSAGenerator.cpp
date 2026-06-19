@@ -28,7 +28,7 @@ void SSAGenerator::getDefinitionBlocks() {
 
         VariableValue *varValue = dynamic_cast<VariableValue *>(var);
         if (varValue == nullptr)
-          throw std::runtime_error("the back of store isnt a variable value");
+          continue;
 
         definitionBlocks[varValue->variable_id].insert(block);
       }
@@ -109,7 +109,10 @@ void SSAGenerator::renameBlock(BasicBlockIR *block) {
   for (auto *inst : block->instructions) {
     if (inst->opcode == Opcode::Store) {
 
-      VariableValue *variable = static_cast<VariableValue *>(inst->operands[1]);
+      VariableValue *variable =
+          dynamic_cast<VariableValue *>(inst->operands[1]);
+      if (variable == nullptr)
+        continue;
       int varId = variable->variable_id;
       int version = nextVersion[varId]++;
       auto *ssaValue = new VariableValue(variable->dataType, variable->value,
@@ -127,7 +130,7 @@ void SSAGenerator::renameBlock(BasicBlockIR *block) {
       VariableValue *variable =
           dynamic_cast<VariableValue *>(inst->operands[0]);
       if (variable == nullptr)
-        std::cout << "dynamic cast is done incorrectly" << std::endl;
+        continue;
       int varId = variable->variable_id;
       if (currentVersion[varId].size() == 0) {
         std::cout << "error as the current version isnt there for " +

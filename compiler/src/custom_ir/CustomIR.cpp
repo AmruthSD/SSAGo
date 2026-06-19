@@ -39,7 +39,7 @@ llvm::Value *BasicBlockIR::llvm_codegen(LLVMIRGenerator *gen) {
 }
 
 llvm::Value *ConstantSizeof::llvm_codegen(LLVMIRGenerator *gen) {
-  return nullptr;
+  return gen->generateSizeofExpr(this);
 }
 
 llvm::Value *PhiInstruction::llvm_codegen(LLVMIRGenerator *gen) {

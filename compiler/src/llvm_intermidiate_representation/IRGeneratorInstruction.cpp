@@ -57,10 +57,22 @@ llvm::Value *LLVMIRGenerator::generateInstruction(Instruction *inst) {
 
 llvm::Value *
 LLVMIRGenerator::generateBinaryInstruction(BinaryInstruction *inst) {
-  std::cout << "Binary instruction generation" << std::endl;
   Opcode op = inst->opcode;
   Value *l = inst->operands[0], *r = inst->operands[1];
   llvm::Value *L = l->llvm_codegen(this), *R = r->llvm_codegen(this);
+  llvm::Type *LTy = L->getType();
+  llvm::Type *RTy = R->getType();
+
+  if (LTy->isIntegerTy() && RTy->isIntegerTy() && LTy != RTy) {
+    unsigned LBits = llvm::cast<llvm::IntegerType>(LTy)->getBitWidth();
+    unsigned RBits = llvm::cast<llvm::IntegerType>(RTy)->getBitWidth();
+
+    if (LBits < RBits) {
+      L = builder.CreateSExt(L, RTy);
+    } else {
+      R = builder.CreateSExt(R, LTy);
+    }
+  }
   Value *res = inst->operands[2];
   switch (op) {
 

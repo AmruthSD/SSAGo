@@ -81,7 +81,6 @@ custom_ir::Value *custom_ir::IRGenerator::generateBlock(BlockStmt *block) {
 }
 
 custom_ir::Value *custom_ir::IRGenerator::generateReturn(ReturnStmt *stmt) {
-  std::cout << "Returning stmt" << std::endl;
   custom_ir::Function *function = builder.GetInsertBlock()->parent;
   Type *returnType = function->functionType;
 
@@ -115,7 +114,6 @@ custom_ir::Value *custom_ir::IRGenerator::generateReturn(ReturnStmt *stmt) {
       throw std::runtime_error("Return type mismatch\n");
     }
   }
-  std::cout << "Returned stmt" << std::endl;
   return builder.CreateRet(retValue);
 }
 

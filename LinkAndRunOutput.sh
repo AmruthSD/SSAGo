@@ -12,6 +12,6 @@ cmake --build "$BUILD_DIR"
 
 "$BUILD_DIR/compiler" "$INPUT_FILE" "$IR_FILE"
 
-# clang++ "$IR_FILE" "$RUNTIME_LIB" -o "$PROGRAM" -lboost_context
+clang++ "$IR_FILE" "$RUNTIME_LIB" -o "$PROGRAM" -lboost_context
 
-# "$PROGRAM"
+"$PROGRAM"
