@@ -14,11 +14,13 @@ SSAGenerator::SSAGenerator(ModuleIR *module,
   insertPhiNodes();
   std::cout << "phi nodes are inserted" << std::endl;
   renameModule();
+  printer.print(module, "build/no_optimization.ir");
   std::cout << "constant optimization" << std::endl;
   ConstantPropagation optimizerConstant(module);
+  printer.print(module, "build/const_prop.ir");
   std::cout << "dce optimization" << std::endl;
   DeadCodeElimination dce(module);
-  printer.print(module);
+  printer.print(module, "build/postdec.ir");
 }
 
 void SSAGenerator::getDefinitionBlocks() {

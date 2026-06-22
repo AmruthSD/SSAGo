@@ -1,14 +1,24 @@
 #include <CustomIR.hpp>
 #include <CustomIRPrinter.hpp>
+#include <fstream>
 
 namespace custom_ir {
 
-void IRPrinter::print(ModuleIR *module) {
+void IRPrinter::print(ModuleIR *module, const std::string &filename) {
+
+  std::ofstream file(filename);
+
+  auto *oldBuf = std::cout.rdbuf();
+  std::cout.rdbuf(file.rdbuf());
+
   printBasicBlock(module->globalDeclarations);
+
   for (auto &[name, func] : module->functions) {
     printFunction(func);
     std::cout << "\n";
   }
+
+  std::cout.rdbuf(oldBuf);
 }
 
 void IRPrinter::printFunction(Function *func) {
