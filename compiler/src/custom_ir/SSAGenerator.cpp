@@ -1,3 +1,4 @@
+#include <ConstantPropagation.hpp>
 #include <CustomSSAGenerator.hpp>
 #include <iostream>
 #include <queue>
@@ -12,6 +13,8 @@ SSAGenerator::SSAGenerator(ModuleIR *module,
   insertPhiNodes();
   std::cout << "phi nodes are inserted" << std::endl;
   renameModule();
+  std::cout << "constant optimization" << std::endl;
+  ConstantPropagation optimizerConstant(module);
   printer.print(module);
 }
 
@@ -21,16 +24,31 @@ void SSAGenerator::getDefinitionBlocks() {
 
       for (auto *inst : block->instructions) {
 
-        if (inst->opcode != Opcode::Store)
+        if (!(inst->opcode == Opcode::Store ||
+              inst->opcode == Opcode::CallExternal))
           continue;
 
-        Value *var = inst->operands.back();
+        if (inst->opcode == Opcode::CallExternal && inst->value == "scanf") {
+          for (auto &operand : inst->operands) {
 
-        VariableValue *varValue = dynamic_cast<VariableValue *>(var);
-        if (varValue == nullptr)
-          continue;
+            Value *var = operand;
 
-        definitionBlocks[varValue->variable_id].insert(block);
+            VariableValue *varValue = dynamic_cast<VariableValue *>(var);
+            if (varValue == nullptr)
+              continue;
+
+            definitionBlocks[varValue->variable_id].insert(block);
+          }
+        } else if (inst->opcode == Opcode::Store) {
+
+          Value *var = inst->operands.back();
+
+          VariableValue *varValue = dynamic_cast<VariableValue *>(var);
+          if (varValue == nullptr)
+            continue;
+
+          definitionBlocks[varValue->variable_id].insert(block);
+        }
       }
     }
   }
@@ -124,6 +142,26 @@ void SSAGenerator::renameBlock(BasicBlockIR *block) {
       pushedVariables.push_back(varId);
 
       continue;
+    }
+    if (inst->opcode == Opcode::CallExternal && inst->value == "scanf") {
+      int idx = 0;
+      for (idx = 0; idx < inst->operands.size(); idx++) {
+
+        Value *var = inst->operands[idx];
+
+        VariableValue *variable = dynamic_cast<VariableValue *>(var);
+        if (variable == nullptr)
+          continue;
+
+        int varId = variable->variable_id;
+        int version = nextVersion[varId]++;
+        auto *ssaValue = new VariableValue(variable->dataType, variable->value,
+                                           variable->variable_id);
+        ssaValue->version = version;
+        inst->operands[idx] = ssaValue;
+        currentVersion[varId].push(ssaValue);
+        pushedVariables.push_back(varId);
+      }
     }
     if (inst->opcode == Opcode::Load) {
 
