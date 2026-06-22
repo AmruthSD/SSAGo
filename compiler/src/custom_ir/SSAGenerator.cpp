@@ -1,5 +1,6 @@
 #include <ConstantPropagation.hpp>
 #include <CustomSSAGenerator.hpp>
+#include <DeadCodeElimination.hpp>
 #include <iostream>
 #include <queue>
 
@@ -15,6 +16,8 @@ SSAGenerator::SSAGenerator(ModuleIR *module,
   renameModule();
   std::cout << "constant optimization" << std::endl;
   ConstantPropagation optimizerConstant(module);
+  std::cout << "dce optimization" << std::endl;
+  DeadCodeElimination dce(module);
   printer.print(module);
 }
 

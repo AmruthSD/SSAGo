@@ -393,6 +393,7 @@ void ConstantPropagation::constantPropagateModule() {
         for (auto &inst : block->instructions) {
           if (foldedInst.find(inst) == foldedInst.end()) {
             bool res = tryFold(inst);
+            changed |= res;
             if (res) {
               foldedInst.insert(inst);
             }
