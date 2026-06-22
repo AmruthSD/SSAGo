@@ -3,12 +3,6 @@
 #include <CustomIR.hpp>
 
 namespace custom_ir {
-
-struct ValueUse {
-  Instruction *definition;
-  std::vector<Instruction *> uses;
-};
-
 class ConstantPropagation {
   ModuleIR *module;
   std::map<std::string, ValueUse *> valueUses;

@@ -183,4 +183,10 @@ public:
 };
 
 extern std::map<int, VariableValue *> variableValues;
+
+struct ValueUse {
+  Instruction *definition;
+  std::vector<Instruction *> uses;
+};
+
 }; // namespace custom_ir

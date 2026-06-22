@@ -1,6 +1,7 @@
 #include <ConstantPropagation.hpp>
 #include <CustomSSAGenerator.hpp>
 #include <DeadCodeElimination.hpp>
+#include <GlobalValueNumbering.hpp>
 #include <iostream>
 #include <queue>
 
@@ -21,6 +22,11 @@ SSAGenerator::SSAGenerator(ModuleIR *module,
   std::cout << "dce optimization" << std::endl;
   DeadCodeElimination dce(module);
   printer.print(module, "build/postdec.ir");
+  std::cout << "gvn optimization" << std::endl;
+  GlobalValueNumbering gvn(module, &dominanceAnalysis);
+  DeadCodeElimination dce2(module);
+  printer.print(module, "build/postgvn.ir");
+  std::cout << "optimizations done converting to llvm ir" << std::endl;
 }
 
 void SSAGenerator::getDefinitionBlocks() {
