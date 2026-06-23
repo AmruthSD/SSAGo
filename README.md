@@ -1,6 +1,6 @@
-# Go-Like Language Compiler
+# SSAGo — an optimizing compiler for a Go-like language, built on LLVM
 
-A compiler for a Go-inspired programming language, built from scratch in C++ with LLVM as the backend. It includes a custom lexer and parser, a hand-rolled SSA-based intermediate representation, a small suite of optimization passes, LLVM IR generation, and a lightweight concurrency runtime supporting goroutines and wait groups.
+Written from scratch in C++, SSAGo lowers a Go-inspired source language into a hand-rolled SSA intermediate representation, runs it through a small suite of classic optimization passes, and emits LLVM IR for native code generation. It also ships a lightweight concurrency runtime — implemented with Boost.Context — supporting goroutines and wait groups.
 
 ## Features
 

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(compiler LANGUAGES C CXX)
+project(ssago LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -26,7 +26,7 @@ llvm_map_components_to_libnames(LLVM_LIBS
 target_link_libraries(compiler ${LLVM_LIBS})
 
 file(GLOB_RECURSE RUNTIME_SOURCES CONFIGURE_DEPENDS
-    "runtime/src/*.cpp",
+    "runtime/src/*.cpp"
     "runtime/src/**/*.cpp"
 )
 add_library(runtime STATIC ${RUNTIME_SOURCES})
